@@ -13,6 +13,7 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/error/en.h>
+#include <ctime>
 
 #include "InAppPurchases/InAppPurchasesResponseBus.h"
 #include "InAppPurchasesSystemComponent.h"

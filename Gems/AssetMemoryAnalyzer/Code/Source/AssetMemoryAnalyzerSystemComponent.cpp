@@ -10,6 +10,7 @@
 #include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <ctime>
 
 #include "AssetMemoryAnalyzerSystemComponent.h"
 
