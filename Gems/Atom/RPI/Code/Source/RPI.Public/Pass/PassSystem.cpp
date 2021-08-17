@@ -298,6 +298,7 @@ namespace AZ
 
         void PassSystem::ProcessQueuedChanges()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: ProcessQueuedChanges");
             RemovePasses();
             BuildPasses();
             InitializePasses();
@@ -309,11 +310,16 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: FrameUpdate");
 
+            ResetFrameStatistics();
             ProcessQueuedChanges();
 
             m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
-            m_rootPass->FrameBegin(params);
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Pass: FrameBegin");
+                m_rootPass->FrameBegin(params);
+            }
         }
 
         void PassSystem::FrameEnd()
@@ -391,6 +397,29 @@ namespace AZ
         void PassSystem::ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler)
         {
             handler.Connect(m_loadTemplatesEvent);
+        }
+
+        void PassSystem::ResetFrameStatistics()
+        {
+            m_frameStatistics.m_numRenderPassesExecuted = 0;
+            m_frameStatistics.m_totalDrawItemsRendered = 0;
+            m_frameStatistics.m_maxDrawItemsRenderedInAPass = 0;
+        }
+
+        PassSystemFrameStatistics PassSystem::GetFrameStatistics()
+        {
+            return m_frameStatistics;
+        }
+
+        void PassSystem::IncrementFrameDrawItemCount(u32 numDrawItems)
+        {
+            m_frameStatistics.m_totalDrawItemsRendered += numDrawItems;
+            m_frameStatistics.m_maxDrawItemsRenderedInAPass = AZStd::max(m_frameStatistics.m_maxDrawItemsRenderedInAPass, numDrawItems);
+        }
+
+        void PassSystem::IncrementFrameRenderPassCount()
+        {
+            ++m_frameStatistics.m_numRenderPassesExecuted;
         }
 
         // --- Pass Factory Functions --- 

@@ -297,7 +297,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.h
     Include/ScriptCanvas/Libraries/Entity/Entity.cpp
     Include/ScriptCanvas/Libraries/Entity/Entity.h
-    Include/ScriptCanvas/Libraries/Entity/EntityIDNodes.h
     Include/ScriptCanvas/Libraries/Entity/EntityNodes.h
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.cpp
     Include/ScriptCanvas/Libraries/Entity/RotateMethod.h
@@ -540,8 +539,10 @@ set(FILES
     Include/ScriptCanvas/Profiler/Aggregator.cpp
     Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Profiler/DrillerEvents.cpp
-    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.h
-    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.cpp
+    Include/ScriptCanvas/Serialization/DatumSerializer.h
+    Include/ScriptCanvas/Serialization/DatumSerializer.cpp
+    Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
+    Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.cpp
     Include/ScriptCanvas/Data/DataTrait.cpp
     Include/ScriptCanvas/Data/DataTrait.h
     Include/ScriptCanvas/Data/PropertyTraits.cpp

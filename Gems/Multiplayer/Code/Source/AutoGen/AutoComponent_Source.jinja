@@ -643,16 +643,15 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         const uint32_t lastBit = static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'End') }});
 {%         endif %}
         
-{% if Property.attrib['IsRewindable']|booleanTrue %}
         AzNetworking::FixedSizeBitsetView deltaRecord(replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}, firstBit, lastBit - firstBit + 1);
-        m_{{ LowerFirst(Property.attrib['Name']) }}.Serialize(serializer, deltaRecord);
-{% else %}
+        if (deltaRecord.AnySet())
+        {
 {%       if Property.attrib['Container'] == 'Vector' %}
-        serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       elif Property.attrib['Container'] == 'Array' %}
-        serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       endif %}
-{% endif %}
+        }
     }
 {%     else %}
     Multiplayer::SerializeNetworkPropertyHelper
@@ -970,7 +969,7 @@ enum class NetworkProperties
 {% macro DefineComponentServiceProxyGrabs(Component, ClassType, ComponentType) %}
 {% for Service in Component.iter('ComponentRelation') %}
 {%     if Service.attrib['Constraint'] != 'Incompatible' %}
-m_{{ LowerFirst(Service.attrib['Name']) }} = FindComponent<{{ UpperFirst(Service.attrib['Namespace']) }}::{{ UpperFirst(Service.attrib['Name']) }}>();
+m_{{ LowerFirst(Service.attrib['Name']) }} = FindComponent<{{ Service.attrib['Namespace'] }}::{{ UpperFirst(Service.attrib['Name']) }}>();
 {%     endif %}
 {% endfor %}
 {% endmacro %}
@@ -1709,12 +1708,12 @@ namespace {{ Component.attrib['Namespace'] }}
 
 {% for Service in Component.iter('ComponentRelation') %}
 {%      if Service.attrib['Constraint'] != 'Incompatible' %}
-    const {{ UpperFirst(Service.attrib['Namespace']) }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() const
+    const {{ Service.attrib['Namespace'] }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() const
     {
         return m_{{ LowerFirst(Service.attrib['Name']) }};
     }
 
-    {{ UpperFirst(Service.attrib['Namespace']) }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() 
+    {{ Service.attrib['Namespace'] }}::{{ UpperFirst(Service.attrib['Name']) }}* {{ ComponentBaseName }}::Get{{ UpperFirst(Service.attrib['Name']) }}() 
     {
         return m_{{ LowerFirst(Service.attrib['Name']) }};
     }
