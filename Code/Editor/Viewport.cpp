@@ -19,6 +19,7 @@
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Editor
 #include "ViewManager.h"
@@ -43,12 +44,7 @@
 void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
 {
     context.m_hitLocation = AZ::Vector3::CreateZero();
-
-    PreWidgetRendering(); // required so that the current render cam is set.
-
     context.m_hitLocation = GetHitLocation(pt);
-
-    PostWidgetRendering();
 }
 
 
@@ -178,8 +174,6 @@ QtViewport::QtViewport(QWidget* parent)
 
     m_bAdvancedSelectMode = false;
 
-    m_pVisibleObjectsCache = new CBaseObjectsCache;
-
     m_constructionPlane.SetPlane(Vec3_OneZ, Vec3_Zero);
     m_constructionPlaneAxisX = Vec3_Zero;
     m_constructionPlaneAxisY = Vec3_Zero;
@@ -209,8 +203,6 @@ QtViewport::QtViewport(QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 QtViewport::~QtViewport()
 {
-    delete m_pVisibleObjectsCache;
-
     GetIEditor()->GetViewManager()->UnregisterViewport(this);
 }
 
@@ -381,11 +373,6 @@ void QtViewport::OnDeactivate()
 void QtViewport::ResetContent()
 {
     m_pMouseOverObject = nullptr;
-
-    // Need to clear visual object cache.
-    // Right after loading new level, some code(e.g. OnMouseMove) access invalid
-    // previous level object before cache updated.
-    GetVisibleObjectsCache()->ClearObjects();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -403,11 +390,8 @@ void QtViewport::Update()
     m_viewportUi.Update();
 
     m_bAdvancedSelectMode = false;
-    bool bSpaceClick = false;
-    {
-        bSpaceClick = CheckVirtualKey(Qt::Key_Space) & !CheckVirtualKey(Qt::Key_Shift) /*& !CheckVirtualKey(Qt::Key_Control)*/;
-    }
-    if (bSpaceClick && hasFocus())
+
+    if (CheckVirtualKey(Qt::Key_Space) && !CheckVirtualKey(Qt::Key_Shift) && hasFocus())
     {
         m_bAdvancedSelectMode = true;
     }
@@ -1092,9 +1076,8 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
     const int viewportId = GetViewportId();
 
     AzToolsFramework::EntityIdList visibleEntityIds;
-    AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
-        viewportId,
-        &AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests::FindVisibleEntities,
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+        viewportId, &AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
         visibleEntityIds);
 
     // Look through all visible entities to find the closest one to the specified mouse point
@@ -1352,28 +1335,6 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
     {
         return true;
     }
-
-    // RAII wrapper for Pre / PostWidgetRendering calls.
-    // It also tracks the times a mouse callback potentially created a new viewport context.
-    struct ScopedProcessingMouseCallback
-    {
-        explicit ScopedProcessingMouseCallback(QtViewport* viewport)
-            : m_viewport(viewport)
-        {
-            m_viewport->m_processingMouseCallbacksCounter++;
-            m_viewport->PreWidgetRendering();
-        }
-
-        ~ScopedProcessingMouseCallback()
-        {
-            m_viewport->PostWidgetRendering();
-            m_viewport->m_processingMouseCallbacksCounter--;
-        }
-
-        QtViewport* m_viewport;
-    };
-
-    ScopedProcessingMouseCallback scopedProcessingMouseCallback(this);
 
     //////////////////////////////////////////////////////////////////////////
     // Hit test gizmo objects.

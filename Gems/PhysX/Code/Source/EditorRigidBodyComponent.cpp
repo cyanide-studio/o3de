@@ -103,7 +103,6 @@ namespace PhysX
         }
     } // namespace Internal
 
-
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -286,6 +285,9 @@ namespace PhysX
         }
         CreateEditorWorldRigidBody();
 
+        PhysX::EditorColliderValidationRequestBus::Event(
+            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
+
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
@@ -305,6 +307,15 @@ namespace PhysX
         {
             sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
         }
+    }
+
+    void EditorRigidBodyComponent::OnConfigurationChanged()
+    {
+        CreateEditorWorldRigidBody();
+
+        // required in case the kinematic setting has changed
+        PhysX::EditorColliderValidationRequestBus::Event(
+            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
     }
 
     void EditorRigidBodyComponent::Reflect(AZ::ReflectContext* context)
@@ -333,7 +344,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body-physics/")
                     ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::CreateEditorWorldRigidBody)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
                 ;
             }
         }

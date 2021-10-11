@@ -196,28 +196,11 @@ namespace AtomToolsFramework
 
     void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
     {
-        // We need to wait until the window is activated, so the underlying surface
-        // has been created and has the correct size.
-        if (windowHandle()->isActive())
-        {
-            SendWindowResizeEvent();
-        }
-        else
-        {
-            m_windowResizedEvent = true;
-        }
+        SendWindowResizeEvent();
     }
 
     bool RenderViewportWidget::event(QEvent* event)
     {
-        // Check if we have a pending resize event.
-        // At this point the surface has been created and has
-        // the proper dimensions.
-        if (event->type() == QEvent::WindowActivate && m_windowResizedEvent)
-        {
-            SendWindowResizeEvent();
-        }
-
         return QWidget::event(event);
     }
 
@@ -231,21 +214,17 @@ namespace AtomToolsFramework
         m_mouseOver = false;
     }
 
-    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* event)
-    {
-        m_mousePosition = event->localPos();
-    }
-
     void RenderViewportWidget::SendWindowResizeEvent()
     {
         // Scale the size by the DPI of the platform to
         // get the proper size in pixels.
+        const auto pixelRatio = devicePixelRatioF();
         const QSize uiWindowSize = size();
-        const QSize windowSize = uiWindowSize * devicePixelRatioF();
+        const QSize windowSize = uiWindowSize * pixelRatio;
 
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-        AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
-        m_windowResizedEvent = false;
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const
@@ -313,36 +292,6 @@ namespace AtomToolsFramework
         cameraState.m_forward = -cameraState.m_forward;
 
         return cameraState;
-    }
-
-    bool RenderViewportWidget::GridSnappingEnabled()
-    {
-        return m_viewportSettings ? m_viewportSettings->GridSnappingEnabled() : false;
-    }
-
-    float RenderViewportWidget::GridSize()
-    {
-        return m_viewportSettings ? m_viewportSettings->GridSize() : 0.0f;
-    }
-
-    bool RenderViewportWidget::ShowGrid()
-    {
-        return m_viewportSettings ? m_viewportSettings->ShowGrid() : false;
-    }
-
-    bool RenderViewportWidget::AngleSnappingEnabled()
-    {
-        return m_viewportSettings ? m_viewportSettings->AngleSnappingEnabled() : false;
-    }
-
-    float RenderViewportWidget::AngleStep()
-    {
-        return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
-    }
-
-    void RenderViewportWidget::SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
-    {
-        m_viewportSettings = viewportSettings;
     }
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
