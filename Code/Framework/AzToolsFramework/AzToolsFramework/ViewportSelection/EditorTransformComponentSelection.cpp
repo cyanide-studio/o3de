@@ -27,6 +27,8 @@
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -407,7 +409,7 @@ namespace AzToolsFramework
             const AzFramework::CameraState cameraState = GetCameraState(viewportId);
             for (size_t entityCacheIndex = 0; entityCacheIndex < entityDataCache.VisibleEntityDataCount(); ++entityCacheIndex)
             {
-                if (entityDataCache.IsVisibleEntityLocked(entityCacheIndex) || !entityDataCache.IsVisibleEntityVisible(entityCacheIndex))
+                if (!entityDataCache.IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex))
                 {
                     continue;
                 }
@@ -890,37 +892,34 @@ namespace AzToolsFramework
         prevModifiers = action.m_modifiers;
     }
 
-    static void HandleAccents(
-        const bool hasSelectedEntities,
-        const AZ::EntityId entityIdUnderCursor,
-        const bool ctrlHeld,
-        AZ::EntityId& hoveredEntityId,
+    void HandleAccents(
+        const AZ::EntityId currentEntityIdUnderCursor,
+        AZ::EntityId& hoveredEntityIdUnderCursor,
+        const HandleAccentsContext& handleAccentsContext,
         const ViewportInteraction::MouseButtons mouseButtons,
-        const bool usingBoxSelect)
+        const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         const bool invalidMouseButtonHeld = mouseButtons.Middle() || mouseButtons.Right();
+        const bool hasSelectedEntities = handleAccentsContext.m_hasSelectedEntities;
+        const bool ctrlHeld = handleAccentsContext.m_ctrlHeld;
+        const bool boxSelect = handleAccentsContext.m_usingBoxSelect;
+        const bool stickySelect = handleAccentsContext.m_usingStickySelect;
+        const bool canSelect = stickySelect ? !hasSelectedEntities || ctrlHeld : true;
 
-        if ((hoveredEntityId.IsValid() && hoveredEntityId != entityIdUnderCursor) ||
-            (hasSelectedEntities && !ctrlHeld && hoveredEntityId.IsValid()) || invalidMouseButtonHeld)
+        const bool removePreviousAccent =
+            (currentEntityIdUnderCursor != hoveredEntityIdUnderCursor && hoveredEntityIdUnderCursor.IsValid()) || invalidMouseButtonHeld;
+        const bool addNextAccent = currentEntityIdUnderCursor.IsValid() && canSelect && !invalidMouseButtonHeld && !boxSelect;
+
+        if (removePreviousAccent)
         {
-            if (hoveredEntityId.IsValid())
-            {
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, hoveredEntityId, false);
-
-                hoveredEntityId.SetInvalid();
-            }
+            setEntityAccentedFn(hoveredEntityIdUnderCursor, false);
+            hoveredEntityIdUnderCursor.SetInvalid();
         }
 
-        if (!invalidMouseButtonHeld && !usingBoxSelect && (!hasSelectedEntities || ctrlHeld))
+        if (addNextAccent)
         {
-            if (entityIdUnderCursor.IsValid())
-            {
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, entityIdUnderCursor, true);
-
-                hoveredEntityId = entityIdUnderCursor;
-            }
+            setEntityAccentedFn(currentEntityIdUnderCursor, true);
+            hoveredEntityIdUnderCursor = currentEntityIdUnderCursor;
         }
     }
 
@@ -981,7 +980,7 @@ namespace AzToolsFramework
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
-            if (entityDataCache.IsVisibleEntitySelectableInViewport(*entityIndex))
+            if (entityDataCache.IsVisibleEntityIndividuallySelectableInViewport(*entityIndex))
             {
                 return *entityIndex;
             }
@@ -1010,6 +1009,15 @@ namespace AzToolsFramework
     {
         EditorTransformChangeNotificationBus::Broadcast(&EditorTransformChangeNotifications::OnEntityTransformChanged, entitiyIds);
         ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+    }
+
+    // leaves focus mode by focusing on the parent of the current perfab in the entity outliner
+    static void LeaveFocusMode()
+    {
+        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityContextId());
+        }
     }
 
     EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCache* entityDataCache)
@@ -1113,7 +1121,7 @@ namespace AzToolsFramework
             });
 
         m_boxSelect.InstallLeftMouseUp(
-            [this, entityBoxSelectData]()
+            [this, entityBoxSelectData]
             {
                 entityBoxSelectData->m_boxSelectSelectionCommand->UpdateSelection(EntityIdVectorFromContainer(m_selectedEntityIds));
 
@@ -1176,8 +1184,10 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    const AZ::Aabb bound = CalculateEditorEntitySelectionBounds(entityId, viewportInfo);
-                    debugDisplay.DrawSolidBox(bound.GetMin(), bound.GetMax());
+                    if (const AZ::Aabb bound = CalculateEditorEntitySelectionBounds(entityId, viewportInfo); bound.IsValid())
+                    {
+                        debugDisplay.DrawSolidBox(bound.GetMin(), bound.GetMax());
+                    }
                 }
 
                 debugDisplay.DepthTestOn();
@@ -1325,39 +1335,6 @@ namespace AzToolsFramework
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
             [this, manipulatorEntityIds]([[maybe_unused]] const PlanarManipulator::Action& action)
-            {
-                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
-                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
-                    manipulatorEntityIds->m_entityIds);
-
-                EndRecordManipulatorCommand();
-            });
-
-        // surface
-        translationManipulators->InstallSurfaceManipulatorMouseDownCallback(
-            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
-            {
-                BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
-
-                InitializeTranslationLookup(m_entityIdManipulators);
-
-                m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
-                m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
-
-                // [ref 1.]
-                BeginRecordManipulatorCommand();
-            });
-
-        translationManipulators->InstallSurfaceManipulatorMouseMoveCallback(
-            [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable
-            {
-                UpdateTranslationManipulator(
-                    action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
-                    m_transformChangedInternally, m_spaceCluster.m_spaceLock);
-            });
-
-        translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
-            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
             {
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
@@ -1799,7 +1776,8 @@ namespace AzToolsFramework
         const AzFramework::ViewportId viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
+        const auto cursorEntityIdQuery = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction);
+        m_currentEntityIdUnderCursor = cursorEntityIdQuery.ContainerAncestorEntityId();
 
         const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
         m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
@@ -1820,12 +1798,10 @@ namespace AzToolsFramework
                         mouseInteraction.m_mouseInteraction,
                         AZ::Aabb::CreateFromMinMax(boxPosition - scaledSize, boxPosition + scaledSize)))
                 {
-                    m_cachedEntityIdUnderCursor = entityId;
+                    m_currentEntityIdUnderCursor = entityId;
                 }
             }
         }
-
-        const AZ::EntityId entityIdUnderCursor = m_cachedEntityIdUnderCursor;
 
         EditorContextMenuUpdate(m_contextMenu, mouseInteraction);
 
@@ -1840,6 +1816,21 @@ namespace AzToolsFramework
             SetTransformMode(static_cast<Mode>(nextMode));
 
             return true;
+        }
+
+        const AZ::EntityId entityIdUnderCursor = m_currentEntityIdUnderCursor;
+
+        if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick &&
+            mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+        {
+            if (cursorEntityIdQuery.HasContainerAncestorEntityId())
+            {
+                if (auto prefabFocusInterface = AZ::Interface<Prefab::PrefabFocusInterface>::Get())
+                {
+                    prefabFocusInterface->FocusOnPrefabInstanceOwningEntityId(cursorEntityIdQuery.ContainerAncestorEntityId());
+                    return false;
+                }
+            }
         }
 
         bool stickySelect = false;
@@ -2171,7 +2162,7 @@ namespace AzToolsFramework
         // lock selection
         AddAction(
             m_actions, { QKeySequence(Qt::Key_L) }, LockSelection, LockSelectionTitle, LockSelectionDesc,
-            [lockUnlock]()
+            [lockUnlock]
             {
                 lockUnlock(true);
             });
@@ -2179,7 +2170,7 @@ namespace AzToolsFramework
         // unlock selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) }, UnlockSelection, LockSelectionTitle, LockSelectionDesc,
-            [lockUnlock]()
+            [lockUnlock]
             {
                 lockUnlock(false);
             });
@@ -2209,7 +2200,7 @@ namespace AzToolsFramework
         // hide selection
         AddAction(
             m_actions, { QKeySequence(Qt::Key_H) }, HideSelection, HideSelectionTitle, HideSelectionDesc,
-            [showHide]()
+            [showHide]
             {
                 showHide(false);
             });
@@ -2217,7 +2208,7 @@ namespace AzToolsFramework
         // show selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) }, ShowSelection, HideSelectionTitle, HideSelectionDesc,
-            [showHide]()
+            [showHide]
             {
                 showHide(true);
             });
@@ -2225,7 +2216,7 @@ namespace AzToolsFramework
         // unlock all entities in the level/scene
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnlockAll, UnlockAllTitle, UnlockAllDesc,
-            []()
+            []
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -2242,14 +2233,14 @@ namespace AzToolsFramework
         // show all entities in the level/scene
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, ShowAll, ShowAllTitle, ShowAllDesc,
-            []()
+            []
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
                 ScopedUndoBatch undoBatch(ShowAllEntitiesUndoRedoDesc);
 
                 EnumerateEditorEntities(
-                    [](AZ::EntityId entityId)
+                    [](const AZ::EntityId entityId)
                     {
                         ScopedUndoBatch::MarkEntityDirty(entityId);
                         SetEntityVisibility(entityId, true);
@@ -2259,7 +2250,7 @@ namespace AzToolsFramework
         // select all entities in the level/scene
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) }, SelectAll, SelectAllTitle, SelectAllDesc,
-            [this]()
+            [this]
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -2299,7 +2290,7 @@ namespace AzToolsFramework
         // invert current selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) }, InvertSelect, InvertSelectionTitle, InvertSelectionDesc,
-            [this]()
+            [this]
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -2346,16 +2337,9 @@ namespace AzToolsFramework
         // duplicate selection
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) }, DuplicateSelect, DuplicateTitle, DuplicateDesc,
-            []()
+            []
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor
-                // is being edited.
-                if (QApplication::focusWidget())
-                {
-                    QApplication::focusWidget()->clearFocus();
-                }
 
                 ScopedUndoBatch undoBatch(DuplicateUndoRedoDesc);
                 auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), DuplicateUndoRedoDesc);
@@ -2371,7 +2355,7 @@ namespace AzToolsFramework
         // delete selection
         AddAction(
             m_actions, { QKeySequence(Qt::Key_Delete) }, DeleteSelect, DeleteTitle, DeleteDesc,
-            [this]()
+            [this]
             {
                 AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -2388,21 +2372,21 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_Space) }, EditEscaspe, "", "",
-            [this]()
+            [this]
             {
                 DeselectEntities();
             });
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_P) }, EditPivot, TogglePivotTitleEditMenu, TogglePivotDesc,
-            [this]()
+            [this]
             {
                 ToggleCenterPivotSelection();
             });
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_R) }, EditReset, ResetEntityTransformTitle, ResetEntityTransformDesc,
-            [this]()
+            [this]
             {
                 switch (m_mode)
                 {
@@ -2427,7 +2411,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_U) }, ViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
-            [this]()
+            [this]
             {
                 SetAllViewportUiVisible(!m_viewportUiVisible);
             });
@@ -3236,7 +3220,7 @@ namespace AzToolsFramework
         QAction* action = menu->addAction(QObject::tr(TogglePivotTitleRightClick));
         QObject::connect(
             action, &QAction::triggered, action,
-            [this]()
+            [this]
             {
                 ToggleCenterPivotSelection();
             });
@@ -3353,9 +3337,23 @@ namespace AzToolsFramework
 
         m_cursorState.Update();
 
+        bool stickySelect = false;
+        ViewportInteraction::ViewportSettingsRequestBus::EventResult(
+            stickySelect, viewportInfo.m_viewportId, &ViewportInteraction::ViewportSettingsRequestBus::Events::StickySelectEnabled);
+
+        HandleAccentsContext handleAccentsContext;
+        handleAccentsContext.m_ctrlHeld = keyboardModifiers.Ctrl();
+        handleAccentsContext.m_hasSelectedEntities = !m_selectedEntityIds.empty();
+        handleAccentsContext.m_usingBoxSelect = m_boxSelect.Active();
+        handleAccentsContext.m_usingStickySelect = stickySelect;
+
         HandleAccents(
-            !m_selectedEntityIds.empty(), m_cachedEntityIdUnderCursor, keyboardModifiers.Ctrl(), m_hoveredEntityId,
-            ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()), m_boxSelect.Active());
+            m_currentEntityIdUnderCursor, m_hoveredEntityId, handleAccentsContext,
+            ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()),
+            [](const AZ::EntityId entityId, bool highlighted)
+            {
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, entityId, highlighted);
+            });
 
         const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(keyboardModifiers));
 
@@ -3499,7 +3497,7 @@ namespace AzToolsFramework
         // get the editor cameras current orientation
         const int viewportId = viewportInfo.m_viewportId;
         const AzFramework::CameraState editorCameraState = GetCameraState(viewportId);
-        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix4x4(AzFramework::CameraTransform(editorCameraState));
+        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix3x4(AzFramework::CameraTransform(editorCameraState));
 
         // create a gizmo camera transform about the origin matching the orientation of the editor camera
         // (10 units back in the y axis to produce an orbit effect)
@@ -3567,6 +3565,8 @@ namespace AzToolsFramework
         DrawAxisGizmo(viewportInfo, debugDisplay);
 
         m_boxSelect.Display2d(viewportInfo, debugDisplay);
+
+        m_editorHelpers->Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorTransformComponentSelection::RefreshSelectedEntityIds()
@@ -3594,6 +3594,17 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         m_selectedEntityIds.reserve(selectedEntityIds.size());
         AZStd::copy(selectedEntityIds.begin(), selectedEntityIds.end(), AZStd::inserter(m_selectedEntityIds, m_selectedEntityIds.end()));
+
+        // Do not create manipulators for the container entity of the focused prefab.
+        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusRoot.IsValid())
+            {
+                m_selectedEntityIds.erase(focusRoot);
+            }
+        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(
@@ -3670,26 +3681,65 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnEditorModeActivated(
         [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(false);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(false);
 
-            EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
-            ToolsApplicationNotificationBus::Handler::BusDisconnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
+                ToolsApplicationNotificationBus::Handler::BusDisconnect();
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
+                    LeaveFocusMode);
+            }
+            break;
+        case ViewportEditorMode::Default:
+        case ViewportEditorMode::Pick:
+            // noop
+            break;
         }
     }
 
     void EditorTransformComponentSelection::OnEditorModeDeactivated(
-        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+        const ViewportEditorModesInterface& editorModeState, const ViewportEditorMode mode)
     {
-        if (mode == ViewportEditorMode::Component)
+        switch (mode)
         {
-            SetAllViewportUiVisible(true);
+        case ViewportEditorMode::Component:
+            {
+                SetAllViewportUiVisible(true);
 
-            ToolsApplicationNotificationBus::Handler::BusConnect();
-            EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
-            EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+                ToolsApplicationNotificationBus::Handler::BusConnect();
+                EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
+                EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
+
+                // note: when leaving component mode, we check if we're still in focus mode (i.e. component mode was
+                // started from within focus mode), if we are, ensure we create/update the viewport border (as leaving
+                // component mode will attempt to remove it)
+                if (editorModeState.IsModeActive(ViewportEditorMode::Focus))
+                {
+                    ViewportUi::ViewportUiRequestBus::Event(
+                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
+                        LeaveFocusMode);
+                }
+            }
+            break;
+        case ViewportEditorMode::Focus:
+            {
+                ViewportUi::ViewportUiRequestBus::Event(
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
+            }
+            break;
+        case ViewportEditorMode::Default:
+        case ViewportEditorMode::Pick:
+            // noop
+            break;
         }
     }
 

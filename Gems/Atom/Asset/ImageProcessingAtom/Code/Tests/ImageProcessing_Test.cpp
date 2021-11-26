@@ -20,6 +20,7 @@
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -110,7 +111,6 @@ namespace UnitTest
         AZ::SerializeContext* GetSerializeContext() override { return m_context.get(); }
         AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return m_jsonRegistrationContext.get(); }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
         void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
@@ -145,6 +145,8 @@ namespace UnitTest
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
 
+            AZ::NameDictionary::Create();
+
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::ImageMipChainAssetHandler>());
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
             m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImagePoolAssetHandler>());
@@ -153,6 +155,7 @@ namespace UnitTest
 
             //prepare reflection
             m_context = AZStd::make_unique<AZ::SerializeContext>();
+            AZ::Name::Reflect(m_context.get());
             BuilderPluginComponent::Reflect(m_context.get());
             AZ::DataPatch::Reflect(m_context.get());
             AZ::RHI::ReflectSystemComponent::Reflect(m_context.get());
@@ -164,6 +167,7 @@ namespace UnitTest
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
+            AZ::Name::Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
 
             // Setup job context for job system
@@ -199,7 +203,7 @@ namespace UnitTest
             m_gemFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Asset/ImageProcessingAtom/";
             m_outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
 
-            m_defaultSettingFolder = m_gemFolder + AZStd::string("Config/");
+            m_defaultSettingFolder = m_gemFolder + AZStd::string("Assets/Config/");
             m_testFileFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/");
 
             InitialImageFilenames();
@@ -227,13 +231,17 @@ namespace UnitTest
             m_jsonRegistrationContext->EnableRemoveReflection();
             m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
             BuilderPluginComponent::Reflect(m_jsonRegistrationContext.get());
+            AZ::Name::Reflect(m_jsonRegistrationContext.get());
             m_jsonRegistrationContext->DisableRemoveReflection();
             m_jsonRegistrationContext.reset();
             m_jsonSystemComponent.reset();
 
             m_context.reset();
             BuilderSettingManager::DestroyInstance();
+
             CPixelFormats::DestroyInstance();
+
+            AZ::NameDictionary::Destroy();
 
             AZ::Data::AssetManager::Destroy();
 
@@ -979,7 +987,6 @@ namespace UnitTest
             ASSERT_TRUE(process->IsSucceed());
 
             SaveImageToFile(process->GetOutputImage(), "rgb", 10);
-            SaveImageToFile(process->GetOutputAlphaImage(), "alpha", 10);
 
             process->GetAppendOutputProducts(outProducts);
 
@@ -1027,7 +1034,7 @@ namespace UnitTest
 
         // Fill-in structure with test data
         TextureSettings fakeTextureSettings;
-        fakeTextureSettings.m_preset = AZ::Uuid::CreateRandom();
+        fakeTextureSettings.m_preset = "testPreset";
         fakeTextureSettings.m_sizeReduceLevel = 0;
         fakeTextureSettings.m_suppressEngineReduce = true;
         fakeTextureSettings.m_enableMipmap = false;

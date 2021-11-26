@@ -73,7 +73,6 @@ unsigned int g_EnableMultipleAssert = 0;//set to something else than 0 if to ena
 #include <unistd.h>
 #include <utime.h>
 #include <dirent.h>
-#include "CryLibrary.h"
 #endif
 
 #if defined(APPLE)
@@ -1264,8 +1263,7 @@ ILINE void FS_CLOSEDIR_NOERR(FS_DIR_TYPE pDir)
 const bool GetFilenameNoCase
 (
     const char* file,
-    char* pAdjustedFilename,
-    const bool cCreateNew
+    char* pAdjustedFilename
 )
 {
     assert(file);
@@ -1282,29 +1280,19 @@ const bool GetFilenameNoCase
         }
     }
 
-    char* slash;
-    const char* dirname;
-    char* name;
-
     if ((pAdjustedFilename) == (char*)-1)
     {
         return false;
     }
 
-    slash = strrchr(pAdjustedFilename, '/');
+#if !defined(LINUX) && !defined(APPLE) && !defined(DEFINE_SKIP_WILDCARD_CHECK)      // fix the parent path anyhow.
+    char* slash = strrchr(pAdjustedFilename, '/');
+    char* name = pAdjustedFilename;
     if (slash)
     {
-        dirname = pAdjustedFilename;
         name = slash + 1;
         *slash = 0;
     }
-    else
-    {
-        dirname = ".";
-        name = pAdjustedFilename;
-    }
-
-#if !defined(LINUX) && !defined(APPLE) && !defined(DEFINE_SKIP_WILDCARD_CHECK)      // fix the parent path anyhow.
     // Check for wildcards. We'll always return true if the specified filename is
     // a wildcard pattern.
     if (strchr(name, '*') || strchr(name, '?'))
@@ -1315,13 +1303,13 @@ const bool GetFilenameNoCase
         }
         return true;
     }
-#endif
-
     // Scan for the file.
     if (slash)
     {
         *slash = '/';
     }
+#endif
+
 
 #if FIX_FILENAME_CASE
     char* path = pAdjustedFilename;

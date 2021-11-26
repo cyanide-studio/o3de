@@ -43,19 +43,18 @@ namespace AzToolsFramework
 
         void PrefabUndoInstance::Undo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true);
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
         }
 
         void PrefabUndoInstance::Redo()
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
-        }
-
-        void PrefabUndoInstance::RedoBatched()
-        {
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
         }
 
+        void PrefabUndoInstance::Redo(InstanceOptionalConstReference instance)
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
+        }
 
         //PrefabEntityUpdateUndo
         PrefabUndoEntityUpdate::PrefabUndoEntityUpdate(const AZStd::string& undoOperationName)
@@ -96,7 +95,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Undo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -107,7 +106,7 @@ namespace AzToolsFramework
         void PrefabUndoEntityUpdate::Redo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, true);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -115,10 +114,10 @@ namespace AzToolsFramework
                 m_templateId);
         }
 
-        void PrefabUndoEntityUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        void PrefabUndoEntityUpdate::Redo(InstanceOptionalConstReference instance)
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, false, instanceToExclude);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -315,12 +314,12 @@ namespace AzToolsFramework
             UpdateLink(m_linkDomNext);
         }
 
-        void PrefabUndoLinkUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        void PrefabUndoLinkUpdate::Redo(InstanceOptionalConstReference instanceToExclude)
         {
             UpdateLink(m_linkDomNext, instanceToExclude);
         }
 
-        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude)
+        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude)
         {
             LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
 
@@ -334,7 +333,7 @@ namespace AzToolsFramework
 
             //propagate the link changes
             link->get().UpdateTarget();
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), false, instanceToExclude);
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), instanceToExclude);
 
             //mark as dirty
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);

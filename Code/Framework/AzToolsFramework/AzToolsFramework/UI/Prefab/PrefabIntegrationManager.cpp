@@ -24,21 +24,23 @@
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
-#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/Viewport/ActionBus.h>
 
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
-
 
 #include <QApplication>
 #include <QCheckBox>
@@ -53,17 +55,19 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QScrollArea>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
-
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
+        AzFramework::EntityContextId PrefabIntegrationManager::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
-        PrefabFocusInterface* PrefabIntegrationManager::s_prefabFocusInterface = nullptr;
+        PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
         PrefabLoaderInterface* PrefabIntegrationManager::s_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* PrefabIntegrationManager::s_prefabPublicInterface = nullptr;
         PrefabSystemComponentInterface* PrefabIntegrationManager::s_prefabSystemComponentInterface = nullptr;
@@ -129,30 +133,113 @@ namespace AzToolsFramework
                 return;
             }
 
-            s_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-            if (s_prefabFocusInterface == nullptr)
+            s_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+            if (s_prefabFocusPublicInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabFocusInterface on PrefabIntegrationManager construction.");
+                AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
 
+            // Get EditorEntityContextId
+            EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+            // Initialize Editor functionality for the Prefab Focus Handler
+            auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            prefabFocusInterface->InitializeEditorInterfaces();
+
             EditorContextMenuBus::Handler::BusConnect();
+            EditorEventsBus::Handler::BusConnect();
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
+            EditorEntityContextNotificationBus::Handler::BusConnect();
+
+            InitializeShortcuts();
         }
 
         PrefabIntegrationManager::~PrefabIntegrationManager()
         {
+            UninitializeShortcuts();
+
+            EditorEntityContextNotificationBus::Handler::BusDisconnect();
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
+            EditorEventsBus::Handler::BusDisconnect();
             EditorContextMenuBus::Handler::BusDisconnect();
         }
 
         void PrefabIntegrationManager::Reflect(AZ::ReflectContext* context)
         {
             PrefabUserSettings::Reflect(context);
+        }
+
+        void PrefabIntegrationManager::InitializeShortcuts()
+        {
+            // Open/Edit Prefab (+)
+            // We also support = to enable easier editing on compact US keyboards.
+            {
+                m_actions.emplace_back(AZStd::make_unique<QAction>(nullptr));
+
+                m_actions.back()->setShortcuts({ QKeySequence(Qt::Key_Plus), QKeySequence(Qt::Key_Equal) });
+                m_actions.back()->setText("Open/Edit Prefab");
+                m_actions.back()->setStatusTip("Edit the prefab in focus mode.");
+
+                QObject::connect(
+                    m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
+                    []
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
+                        if (selectedEntities.size() != 1)
+                        {
+                            return;
+                        }
+
+                        AZ::EntityId selectedEntity = selectedEntities[0];
+
+                        if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
+                        {
+                            return;
+                        }
+
+                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
+                        {
+                            ContextMenu_EditPrefab(selectedEntity);
+                        }
+                    });
+
+                EditorActionRequestBus::Broadcast(
+                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("com.o3de.action.editortransform.prefabopen"),
+                    m_actions.back().get());
+            }
+
+            // Close Prefab (-)
+            {
+                m_actions.emplace_back(AZStd::make_unique<QAction>(nullptr));
+
+                m_actions.back()->setShortcuts({ QKeySequence(Qt::Key_Minus) });
+                m_actions.back()->setText("Close Prefab");
+                m_actions.back()->setStatusTip("Close focus mode for this prefab and move one level up.");
+
+                QObject::connect(
+                    m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
+                    []
+                    {
+                        ContextMenu_ClosePrefab();
+                    });
+
+                EditorActionRequestBus::Broadcast(
+                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("com.o3de.action.editortransform.prefabclose"),
+                    m_actions.back().get());
+            }
+        }
+
+        void PrefabIntegrationManager::UninitializeShortcuts()
+        {
+            m_actions.clear();
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const
@@ -179,8 +266,9 @@ namespace AzToolsFramework
             {
                 if (!selectedEntities.empty())
                 {
-                    // Hide if the only selected entity is the Level Container
-                    if (selectedEntities.size() > 1 || !s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntities[0]))
+                    // Hide if the only selected entity is the Focused Instance Container
+                    if (selectedEntities.size() > 1 ||
+                        selectedEntities[0] != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId))
                     {
                         bool layerInSelection = false;
 
@@ -244,22 +332,30 @@ namespace AzToolsFramework
 
                     if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
                     {
-                        // Edit Prefab
-                        if (prefabWipFeaturesEnabled)
+                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
                         {
-                            bool beingEdited = s_prefabFocusInterface->IsOwningPrefabBeingFocused(selectedEntity);
+                            // Edit Prefab
+                            QAction* editAction = menu->addAction(QObject::tr("Open/Edit Prefab"));
+                            editAction->setShortcut(QKeySequence(Qt::Key_Plus));
+                            editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
 
-                            if (!beingEdited)
-                            {
-                                QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
-                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
+                            QObject::connect(editAction, &QAction::triggered, editAction, [selectedEntity] {
+                                ContextMenu_EditPrefab(selectedEntity);
+                            });
+                        }
+                        else
+                        {
+                            // Close Prefab
+                            QAction* closeAction = menu->addAction(QObject::tr("Close Prefab"));
+                            closeAction->setShortcut(QKeySequence(Qt::Key_Minus));
+                            closeAction->setToolTip(QObject::tr("Close focus mode for this prefab and move one level up."));
 
-                                QObject::connect(editAction, &QAction::triggered, editAction, [selectedEntity] {
-                                    ContextMenu_EditPrefab(selectedEntity);
+                            QObject::connect(
+                                closeAction, &QAction::triggered, closeAction,
+                                []
+                                {
+                                    ContextMenu_ClosePrefab();
                                 });
-
-                                itemWasShown = true;
-                            }
                         }
 
                         // Save Prefab
@@ -274,9 +370,9 @@ namespace AzToolsFramework
                             QObject::connect(saveAction, &QAction::triggered, saveAction, [selectedEntity] {
                                 ContextMenu_SavePrefab(selectedEntity);
                             });
-
-                            itemWasShown = true;
                         }
+
+                        itemWasShown = true;
                     }
                 }
             }
@@ -288,8 +384,10 @@ namespace AzToolsFramework
 
             QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
             QObject::connect(deleteAction, &QAction::triggered, deleteAction, [] { ContextMenu_DeleteSelected(); });
-            if (selectedEntities.size() == 0 ||
-                (selectedEntities.size() == 1 && s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntities[0])))
+
+            if (selectedEntities.empty() ||
+                (selectedEntities.size() == 1 &&
+                 selectedEntities[0] == s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId)))
             {
                 deleteAction->setDisabled(true);
             }
@@ -297,20 +395,25 @@ namespace AzToolsFramework
             // Detach Prefab
             if (selectedEntities.size() == 1)
             {
-                AZ::EntityId selectedEntity = selectedEntities[0];
+                AZ::EntityId selectedEntityId = selectedEntities[0];
 
-                if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
-                    !s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntity))
+                if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
+                    selectedEntityId != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId))
                 {
                     QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
                     QObject::connect(
                         detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                        [selectedEntity]
+                        [selectedEntityId]
                         {
-                            ContextMenu_DetachPrefab(selectedEntity);
+                            ContextMenu_DetachPrefab(selectedEntityId);
                         });
                 }
             }
+        }
+
+        void PrefabIntegrationManager::OnEscape()
+        {
+            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
         }
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
@@ -323,6 +426,24 @@ namespace AzToolsFramework
             }
         }
 
+        void PrefabIntegrationManager::OnStartPlayInEditorBegin()
+        {
+            // Focus on the root prefab (AZ::EntityId() will default to it)
+            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
+        }
+
+        void PrefabIntegrationManager::OnStopPlayInEditor()
+        {
+            // Refresh all containers when leaving Game Mode to ensure everything is synced.
+            QTimer::singleShot(
+                0,
+                [&]()
+                {
+                    s_containerEntityInterface->RefreshAllContainerEntities(s_editorEntityContextId);
+                }
+            );
+        }
+
         void PrefabIntegrationManager::ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities)
         {
             // Save a reference to our currently active window since it will be
@@ -331,13 +452,18 @@ namespace AzToolsFramework
             QWidget* activeWindow = QApplication::activeWindow();
             const AZStd::string prefabFilesPath = "@projectroot@/Prefabs";
 
-            // Remove Level entity if it's part of the list
-            
-            auto levelContainerIter =
-                AZStd::find(selectedEntities.begin(), selectedEntities.end(), s_prefabPublicInterface->GetLevelInstanceContainerEntityId());
-            if (levelContainerIter != selectedEntities.end())
+            // Remove focused instance container entity if it's part of the list
+            auto focusedContainerIter = AZStd::find(
+                selectedEntities.begin(), selectedEntities.end(),
+                s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId));
+            if (focusedContainerIter != selectedEntities.end())
             {
-                selectedEntities.erase(levelContainerIter);
+                selectedEntities.erase(focusedContainerIter);
+            }
+
+            if (selectedEntities.empty())
+            {
+                return;
             }
 
             // Set default folder for prefabs
@@ -481,9 +607,14 @@ namespace AzToolsFramework
             }
         }
 
+        void PrefabIntegrationManager::ContextMenu_ClosePrefab()
+        {
+            s_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+        }
+
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)
         {
-            s_prefabFocusInterface->FocusOnOwningPrefab(containerEntity);
+            s_prefabFocusPublicInterface->FocusOnOwningPrefab(containerEntity);
         }
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
@@ -752,15 +883,8 @@ namespace AzToolsFramework
             {
                 return false;
             }
-
             outPrefabAssetPath = product->GetRelativePath();
-
-            auto asset = AZ::Data::AssetManager::Instance().GetAsset(
-                product->GetAssetId(),
-                azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>(),
-                AZ::Data::AssetLoadBehavior::Default);
-
-            return asset.BlockUntilLoadComplete() != AZ::Data::AssetData::AssetStatus::Error;
+            return true;
         }
 
         void PrefabIntegrationManager::WarnUserOfError(AZStd::string_view title, AZStd::string_view message)
@@ -793,16 +917,15 @@ namespace AzToolsFramework
             }
             else
             {
-                QString cleanSaveAs(QDir::cleanPath(prefabPath));
+                AZ::IO::FixedMaxPath lexicallyNormalPath = AZ::IO::PathView(prefabPath.toUtf8().constData()).LexicallyNormal();
 
                 bool isPathSafeForAssets = false;
-                for (AZStd::string assetSafeFolder : assetSafeFolders)
+                for (const AZStd::string& assetSafeFolder : assetSafeFolders)
                 {
-                    QString cleanAssetSafeFolder(QDir::cleanPath(assetSafeFolder.c_str()));
-                    // Compare using clean paths so slash direction does not matter.
-                    // Note that this comparison is case sensitive because some file systems
-                    // Open 3D Engine supports are case sensitive.
-                    if (cleanSaveAs.startsWith(cleanAssetSafeFolder))
+                    AZ::IO::PathView assetSafeFolderView(assetSafeFolder);
+                    // Check if the prefabPath is relative to the safe asset directory.
+                    // The Path classes are being used to make this check case insensitive.
+                    if (lexicallyNormalPath.IsRelativeTo(assetSafeFolderView))
                     {
                         isPathSafeForAssets = true;
                         break;
@@ -1147,25 +1270,14 @@ namespace AzToolsFramework
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
 
-                bool prefabWipFeaturesEnabled = false;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                    prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-                if (prefabWipFeaturesEnabled)
-                {
-                    // Register entity as a container
-                    s_containerEntityInterface->RegisterEntityAsContainer(entityId);
-                }
+                // Register entity as a container
+                s_containerEntityInterface->RegisterEntityAsContainer(entityId);
             }
         }
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
         {
-            bool prefabWipFeaturesEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-            if (prefabWipFeaturesEnabled && !s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+            if (!s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
             {
                 // Unregister entity as a container
                 s_containerEntityInterface->UnregisterEntityAsContainer(entityId);
@@ -1393,7 +1505,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AzQtComponents::Card> PrefabIntegrationManager::ConstructUnsavedPrefabsCard(TemplateId templateId)
         {
-            FlowLayout* unsavedPrefabsLayout = new FlowLayout(AzToolsFramework::GetActiveWindow());
+            FlowLayout* unsavedPrefabsLayout = new FlowLayout(nullptr);
 
             AZStd::set<AZ::IO::PathView> dirtyTemplatePaths = s_prefabSystemComponentInterface->GetDirtyTemplatePaths(templateId);
 

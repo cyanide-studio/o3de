@@ -47,6 +47,7 @@ set(FILES
     API/EntityCompositionRequestBus.h
     API/EntityCompositionNotificationBus.h
     API/EditorViewportIconDisplayInterface.h
+    API/PythonLoader.h
     API/ViewPaneOptions.h
     API/ViewportEditorModeTrackerInterface.h
     Application/Ticker.h
@@ -147,6 +148,8 @@ set(FILES
     Entity/EditorEntitySortBus.h
     Entity/EditorEntitySortComponent.cpp
     Entity/EditorEntitySortComponent.h
+    Entity/EditorEntitySortComponentSerializer.cpp
+    Entity/EditorEntitySortComponentSerializer.h
     Entity/EditorEntityTransformBus.h
     Entity/PrefabEditorEntityOwnershipInterface.h
     Entity/PrefabEditorEntityOwnershipService.h
@@ -553,6 +556,8 @@ set(FILES
     ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
     ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/EditorVisibleEntityDataCache.cpp
+    ViewportSelection/InvalidClicks.h
+    ViewportSelection/InvalidClicks.cpp
     ViewportSelection/ViewportEditorModeTracker.cpp
     ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
@@ -646,6 +651,9 @@ set(FILES
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h
     Prefab/PrefabFocusNotificationBus.h
+    Prefab/PrefabFocusPublicInterface.h
+    Prefab/PrefabFocusUndo.h
+    Prefab/PrefabFocusUndo.cpp
     Prefab/PrefabIdTypes.h
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
@@ -754,14 +762,20 @@ set(FILES
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
     UI/Prefab/PrefabViewportFocusPathHandler.cpp
+    UI/Notifications/ToastNotificationsView.cpp
+    UI/Notifications/ToastNotificationsView.h
+    UI/Notifications/ToastBus.h
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui
     PythonTerminal/ScriptTermDialog.cpp
     PythonTerminal/ScriptTermDialog.h
     PythonTerminal/ScriptTermDialog.ui
-    Input/QtEventToAzInputManager.h
-    Input/QtEventToAzInputManager.cpp
+    Input/QtEventToAzInputMapper.h
+    Input/QtEventToAzInputMapper.cpp
+    Script/LuaSymbolsReporterBus.h
+    Script/LuaSymbolsReporterSystemComponent.h
+    Script/LuaSymbolsReporterSystemComponent.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

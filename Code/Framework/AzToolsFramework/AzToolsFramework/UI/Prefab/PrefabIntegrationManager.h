@@ -14,6 +14,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
@@ -30,7 +31,7 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        class PrefabFocusInterface;
+        class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
@@ -51,10 +52,12 @@ namespace AzToolsFramework
 
         class PrefabIntegrationManager final
             : public EditorContextMenuBus::Handler
+            , public EditorEventsBus::Handler
             , public AssetBrowser::AssetBrowserSourceDropBus::Handler
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
             , public QObject
+            , private EditorEntityContextNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
@@ -64,19 +67,26 @@ namespace AzToolsFramework
 
             static void Reflect(AZ::ReflectContext* context);
 
-            // EditorContextMenuBus...
+            // EditorContextMenuBus overrides ...
             int GetMenuPosition() const override;
             AZStd::string GetMenuIdentifier() const override;
             void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
-            // EntityOutlinerSourceDropHandlingBus...
+            // EditorEventsBus overrides ...
+            void OnEscape();
+
+            // EntityOutlinerSourceDropHandlingBus overrides ...
             void HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const override;
 
-            // PrefabInstanceContainerNotificationBus...
+            // EditorEntityContextNotificationBus overrides ...
+            void OnStartPlayInEditorBegin() override;
+            void OnStopPlayInEditor() override;
+
+            // PrefabInstanceContainerNotificationBus overrides ...
             void OnPrefabComponentActivate(AZ::EntityId entityId) override;
             void OnPrefabComponentDeactivate(AZ::EntityId entityId) override;
 
-            // PrefabIntegrationInterface...
+            // PrefabIntegrationInterface overrides ...
             AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& position, AZ::EntityId parentId) override;
             int ExecuteClosePrefabDialog(TemplateId templateId) override;
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference) override;
@@ -92,10 +102,15 @@ namespace AzToolsFramework
             static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
             static void ContextMenu_InstantiatePrefab();
             static void ContextMenu_InstantiateProceduralPrefab();
+            static void ContextMenu_ClosePrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
             static void ContextMenu_DeleteSelected();
             static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
+
+            // Shortcut setup handlers
+            void InitializeShortcuts();
+            void UninitializeShortcuts();
 
             // Prompt and resolve dialogs
             static bool QueryUserForPrefabSaveLocation(
@@ -136,11 +151,14 @@ namespace AzToolsFramework
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
 
+            AZStd::vector<AZStd::unique_ptr<QAction>> m_actions;
+
             static const AZStd::string s_prefabFileExtension;
+            static AzFramework::EntityContextId s_editorEntityContextId;
 
             static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;
-            static PrefabFocusInterface* s_prefabFocusInterface;
+            static PrefabFocusPublicInterface* s_prefabFocusPublicInterface;
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;

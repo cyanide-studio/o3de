@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -38,6 +37,7 @@
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -56,6 +56,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -497,13 +498,11 @@ void SandboxIntegrationManager::EntityParentChanged(
     // before finally being saved, it will result in all of those layers saving, too.
     AZ::EntityId oldAncestor = oldParentId;
 
-    bool wasNotInLayer = false;
     AZ::EntityId oldLayer;
     do
     {
         if (!oldAncestor.IsValid())
         {
-            wasNotInLayer = true;
             break;
         }
 
@@ -529,13 +528,11 @@ void SandboxIntegrationManager::EntityParentChanged(
 
     AZ::EntityId newAncestor = newParentId;
 
-    bool isGoingToRootScene = false;
     AZ::EntityId newLayer;
     do
     {
         if (!newAncestor.IsValid())
         {
-            isGoingToRootScene = true;
             break;
         }
 
@@ -642,6 +639,9 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     AzToolsFramework::EntityIdList selected;
     GetSelectedOrHighlightedEntities(selected);
 
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     QAction* action = nullptr;
 
     // when nothing is selected, entity is created at root level
@@ -658,17 +658,19 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     // when a single entity is selected, entity is created as its child
     else if (selected.size() == 1)
     {
-        action = menu->addAction(QObject::tr("Create entity"));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [selected]
-            {
-                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CreateNewEntityAsChild, selected.front());
-            });
+        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selected.front())))
+        {
+            action = menu->addAction(QObject::tr("Create entity"));
+            QObject::connect(
+                action, &QAction::triggered, action,
+                [selected]
+                {
+                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selected.front());
+                }
+            );
+        }
     }
-
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!prefabSystemEnabled)
     {
@@ -1388,13 +1390,13 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 {
     AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
 
-    CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (view)
+    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
-        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
-        worldPosition = view->GetHitLocation(viewPoint);
+        worldPosition = AzToolsFramework::FindClosestPickIntersection(
+            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
+            GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);
@@ -1669,6 +1671,12 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
             const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+            // do not attempt to interpolate to where we currently are
+            if (cameraTransform.GetTranslation().IsClose(center))
+            {
+                continue;
+            }
+
             const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
 
             // move camera 25% further back than required
@@ -1786,6 +1794,11 @@ AZStd::string SandboxIntegrationManager::GetComponentEditorIcon(const AZ::Uuid& 
 {
     AZStd::string iconPath = GetComponentIconPath(componentType, AZ::Edit::Attributes::Icon, component);
     return iconPath;
+}
+
+AZStd::string SandboxIntegrationManager::GetComponentTypeEditorIcon(const AZ::Uuid& componentType)
+{
+    return GetComponentEditorIcon(componentType, nullptr);
 }
 
 AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& componentType,

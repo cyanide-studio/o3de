@@ -39,6 +39,7 @@
 #include <Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <ColorGrading/LutGenerationPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 #include <PostProcessing/BlendColorGradingLutsPass.h>
 #include <PostProcessing/BloomParentPass.h>
@@ -50,6 +51,7 @@
 #include <PostProcessing/DepthOfFieldParentPass.h>
 #include <PostProcessing/DepthOfFieldReadBackFocusDepthPass.h>
 #include <PostProcessing/DepthOfFieldWriteFocusDepthFromGpuPass.h>
+#include <PostProcessing/NewDepthOfFieldPasses.h>
 #include <PostProcessing/EyeAdaptationPass.h>
 #include <PostProcessing/LuminanceHistogramGeneratorPass.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
@@ -98,6 +100,7 @@
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h>
+#include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h>
@@ -230,6 +233,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("HDRColorGradingPass"), &HDRColorGradingPass::Create);
             passSystem->AddPassCreator(Name("LookModificationCompositePass"), &LookModificationCompositePass::Create);
             passSystem->AddPassCreator(Name("LookModificationTransformPass"), &LookModificationPass::Create);
+            passSystem->AddPassCreator(Name("LutGenerationPass"), &LutGenerationPass::Create);
             passSystem->AddPassCreator(Name("SMAAEdgeDetectionPass"), &SMAAEdgeDetectionPass::Create);
             passSystem->AddPassCreator(Name("SMAABlendingWeightCalculationPass"), &SMAABlendingWeightCalculationPass::Create);
             passSystem->AddPassCreator(Name("SMAANeighborhoodBlendingPass"), &SMAANeighborhoodBlendingPass::Create);
@@ -247,6 +251,10 @@ namespace AZ
             passSystem->AddPassCreator(Name("DepthOfFieldParentPass"), &DepthOfFieldParentPass::Create);
             passSystem->AddPassCreator(Name("DepthOfFieldReadBackFocusDepthPass"), &DepthOfFieldReadBackFocusDepthPass::Create);
             passSystem->AddPassCreator(Name("DepthOfFieldWriteFocusDepthFromGpuPass"), &DepthOfFieldWriteFocusDepthFromGpuPass::Create);
+
+            passSystem->AddPassCreator(Name("NewDepthOfFieldParentPass"), &NewDepthOfFieldParentPass::Create);
+            passSystem->AddPassCreator(Name("NewDepthOfFieldTileReducePass"), &NewDepthOfFieldTileReducePass::Create);
+            passSystem->AddPassCreator(Name("NewDepthOfFieldFilterPass"), &NewDepthOfFieldFilterPass::Create);
 
             // Add FastDepthAwareBlur passes
             passSystem->AddPassCreator(Name("FastDepthAwareBlurHorPass"), &FastDepthAwareBlurHorPass::Create);
@@ -285,6 +293,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("DeferredFogPass"), &DeferredFogPass::Create);
 
             // Add Reflection passes
+            passSystem->AddPassCreator(Name("ReflectionScreenSpaceTracePass"), &Render::ReflectionScreenSpaceTracePass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceCompositePass"), &Render::ReflectionScreenSpaceCompositePass::Create);
