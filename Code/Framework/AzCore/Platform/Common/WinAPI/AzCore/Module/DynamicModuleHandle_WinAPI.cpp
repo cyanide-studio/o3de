@@ -52,10 +52,12 @@ namespace AZ
                     }
                 }
             }
-
+            
+// @CYA EDIT: fix dll dependencies loading
             // If the module file path does not exist, attempt to search for the module within
             // the project's build directory
-            if (!AZ::IO::SystemFile::Exists(m_fileName.c_str()))
+            //if (!AZ::IO::SystemFile::Exists(m_fileName.c_str()))
+// @CYA END
             {
                 // The Settings Registry may not exist in early startup if modules are loaded
                 // before the ComponentApplication is crated(such as in the Editor main.cpp)
@@ -73,7 +75,10 @@ namespace AZ
                     }
                 }
             }
-            else
+// @CYA EDIT: fix dll dependencies loading
+            //else
+            if (AZ::IO::SystemFile::Exists(m_fileName.c_str()))
+// @CYA END
             {
                 // The module does exist (in 'cwd'), but still needs to be an absolute path for the module to be loaded.
                 AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(m_fileName);
@@ -105,7 +110,9 @@ namespace AZ
             {
                 // If module already open, return false, it was not loaded.
                 alreadyLoaded = NULL != GetModuleHandleW(fileNameW);
-                m_handle = LoadLibraryW(fileNameW);
+// @CYA EDIT: fix dll dependencies loading
+                m_handle = LoadLibraryEx(fileNameW, nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+// @CYA END
             }
             else
             {
