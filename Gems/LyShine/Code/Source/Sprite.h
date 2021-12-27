@@ -15,9 +15,6 @@
 #include "TextureAtlas/TextureAtlasBus.h"
 #include "TextureAtlas/TextureAtlasNotificationBus.h"
 
-#include <Atom/RPI.Reflect/Image/Image.h>
-#include <AtomCore/Instance/Instance.h>
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class CSprite
     : public ISprite
@@ -66,7 +63,9 @@ public: // member functions
 
     // ~TextureAtlasNotifications
 
-    AZ::Data::Instance<AZ::RPI::Image> GetImage();
+// @CYA EDIT: expose GetImage
+    AZ::Data::Instance<AZ::RPI::Image> GetImage() override;
+// @CYA EDIT
 
 public: // static member functions
 

@@ -11,6 +11,11 @@
 #include <ITexture.h>
 #include <LyShine/UiBase.h>
 
+// @CYA EDIT: expose AddPrimitive
+#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
+// @CYA END
+
 namespace AZ
 {
     class Color;
@@ -76,5 +81,10 @@ namespace LyShine
 
         //! Get the current alpha fade value
         virtual float GetAlphaFade() const = 0;
+
+// @CYA EDIT: expose AddPrimitive
+        virtual void AddPrimitiveAtom(DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
+            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode) = 0;
+// @CYA END
     };
 }

@@ -12,6 +12,11 @@
 #include <LyShine/Bus/UiTransformBus.h>
 #include <AzCore/Math/Vector2.h>
 
+// @CYA EDIT: expose AddPrimitive
+#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
+// @CYA END
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! A sprite is a texture with extra information about how it behaves for 2D drawing
 //! Currently a sprite exists on disk as a side car file next to the texture file.
@@ -135,4 +140,8 @@ public: // member functions
     
     //! Returns true if this sprite is configured as a sprite-sheet, false otherwise
     virtual bool IsSpriteSheet() const = 0;
+
+// @CYA EDIT: expose GetImage
+    virtual AZ::Data::Instance<AZ::RPI::Image> GetImage() = 0;
+// @CYA EDIT
 };

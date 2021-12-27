@@ -278,10 +278,12 @@ namespace LyShine
         void PopAlphaFade() override;
         float GetAlphaFade() const override;
         // ~IRenderGraph
-
+        
+// @CYA EDIT: expose AddPrimitive
         // LYSHINE_ATOM_TODO - this can be renamed back to AddPrimitive after removal of IRenderer from all UI components
         void AddPrimitiveAtom(DynUiPrimitive* primitive, const AZ::Data::Instance<AZ::RPI::Image>& texture,
-            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode);
+            bool isClampTextureMode, bool isTextureSRGB, bool isTexturePremultipliedAlpha, BlendMode blendMode) override;
+// @CYA END
 
         //! Add an indexed triangle list primitive to the render graph which will use maskTexture as an alpha (gradient) mask
         void AddAlphaMaskPrimitiveAtom(DynUiPrimitive* primitive,
