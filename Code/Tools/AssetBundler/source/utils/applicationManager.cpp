@@ -24,6 +24,9 @@
 
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
+// @CYA EDIT: asset builder now handles wildcard paths
+#include <AzFramework/FileFunc/FileFunc.h>
+// @CYA END
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -1474,9 +1477,49 @@ namespace AssetBundler
         {
             // Add Seeds
             PlatformFlags platformFlag = AzFramework::PlatformHelper::GetPlatformFlagFromPlatformIndex(platformId);
+
+// @CYA EDIT: asset builder now handles wildcard paths
+            auto cacheFolderPath = AssetBundler::GetProjectCacheFolderPath();
+            AZ::IO::Path cachePath;
+            if (cacheFolderPath.IsSuccess())
+            {
+                cachePath = cacheFolderPath.GetValue() / AZ::PlatformDefaults::PlatformHelper::GetPlatformName(platformId);
+            }
+// @CYA END
+
             for (const AZStd::string& assetPath : params.m_addSeedList)
             {
-                m_assetSeedManager->AddSeedAsset(assetPath, platformFlag);
+// @CYA EDIT: asset builder now handles wildcard paths
+                if (AZ::StringFunc::Contains(assetPath, '*'))
+                {
+                    auto filter = cachePath / assetPath;
+                    AZStd::string path = filter.ParentPath().Native();
+                    AZStd::string ext = filter.Filename().Native();
+
+                    bool bRecursive = AZ::StringFunc::Contains(filter.Filename().Native(), "**");
+
+                    // we search all files and filter by extension later
+                    // because recursive is not working with extension
+                    auto result = AzFramework::FileFunc::FindFilesInPath(path, "*", bRecursive);
+                    if (result.IsSuccess())
+                    {
+                        auto list = result.GetValue();
+                        for (auto& file : list)
+                        {
+                            if (AZStd::wildcard_match(ext, file))
+                            {
+                                AZ::IO::Path filepath(file);
+                                filepath = filepath.LexicallyRelative(cachePath);
+                                m_assetSeedManager->AddSeedAsset(filepath.Native(), platformFlag);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    m_assetSeedManager->AddSeedAsset(assetPath, platformFlag);
+                }
+// @CYA END
             }
 
             // Remove Seeds
