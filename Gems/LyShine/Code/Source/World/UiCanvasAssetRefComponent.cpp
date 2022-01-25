@@ -239,7 +239,9 @@ void UiCanvasAssetRefComponent::Activate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasAssetRefComponent::Deactivate()
 {
-    if (!gEnv->IsDedicated())
+// @CYA EDIT: fix nullptr crash
+    if (nullptr != gEnv && !gEnv->IsDedicated())
+// @CYA END
     {
         if (m_canvasEntityId.IsValid())
         {

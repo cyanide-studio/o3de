@@ -2024,8 +2024,13 @@ void UiCanvasComponent::QueueRttPassRebuild()
     UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
     if (uiRenderer && uiRenderer->GetViewportContext()) // can be null in automated testing
     {
-        AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
-        EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+// @CYA EDIT: fix nullptr crash
+        if (uiRenderer->GetViewportContext()->GetRenderScene())
+        {
+            AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
+            EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+        }
+// @CYA END
     }
 }
 
