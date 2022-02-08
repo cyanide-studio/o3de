@@ -45,6 +45,7 @@ ly_append_configurations_options(
         _RELEASE
         RELEASE
         NDEBUG
+        AZ_ENABLE_TRACING
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_RELEASE}"
 )
 

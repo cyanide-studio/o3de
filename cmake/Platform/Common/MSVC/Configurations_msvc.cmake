@@ -85,6 +85,7 @@ ly_append_configurations_options(
         /Ot             # Favor fast code over small code
         /Oi             # Use Intrinsic Functions
         /Oy             # Omit the frame pointer
+        /Zi             # Generate debugging information (no Edit/Continue)
     LINK
         /NOLOGO             # Suppress Copyright and version number message
         /IGNORE:4099        # 3rdParty linking produces noise with LNK4099
@@ -97,6 +98,7 @@ ly_append_configurations_options(
         /OPT:REF # Eliminates functions and data that are never referenced
         /OPT:ICF # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
         /INCREMENTAL:NO
+        /DEBUG              # Generate pdbs
 )
 
 set(LY_BUILD_WITH_ADDRESS_SANITIZER FALSE CACHE BOOL "Builds using AddressSanitizer (ASan). Will disable Edit/Continue, Incremental building and Run-Time checks (default = FALSE)")
