@@ -107,6 +107,9 @@ namespace AZ
                 alreadyLoaded = NULL != GetModuleHandleW(fileNameW);
 // @CYA EDIT: fix dll dependencies loading
                 m_handle = LoadLibraryEx(fileNameW, nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+
+                if (nullptr == m_handle)
+                    m_handle = LoadLibrary(fileNameW);
 // @CYA END
             }
             else
