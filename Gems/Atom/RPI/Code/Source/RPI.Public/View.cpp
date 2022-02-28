@@ -47,6 +47,20 @@ namespace AZ
         View::View(const AZ::Name& name, UsageFlags usage)
             : m_name(name)
             , m_usageFlags(usage)
+// @CYA EDIT: fix exception, missing default init.
+// SetWorldToViewMatrix and SetViewToClipMatrix need default init or an exceptions occured in debug
+// because m_worldToViewMatrix need m_viewToClipMatrix and inverse
+            , m_worldToViewMatrix(AZ::Matrix4x4::CreateIdentity())
+            , m_viewToWorldMatrix(AZ::Matrix4x4::CreateIdentity())
+            , m_viewToClipMatrix(AZ::Matrix4x4::CreateIdentity())
+            , m_clipToWorldMatrix(AZ::Matrix4x4::CreateIdentity())
+            , m_worldToClipMatrix(AZ::Matrix4x4::CreateIdentity())
+            , m_worldToViewPrevMatrix(AZ::Matrix4x4::CreateIdentity())
+            , m_viewToClipPrevMatrix(AZ::Matrix4x4::CreateIdentity())
+            , m_position(0, 0, 0)
+            , m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ(0,0,0,0)
+            , m_unprojectionConstants(0,0,0,0)
+// @CYA END
         {
             AZ_Assert(!name.IsEmpty(), "invalid name");
 
