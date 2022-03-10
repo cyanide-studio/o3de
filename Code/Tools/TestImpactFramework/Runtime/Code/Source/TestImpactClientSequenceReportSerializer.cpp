@@ -752,7 +752,9 @@ namespace TestImpact
         }
         else
         {
-            static_assert(false, "Template paramater must be a valid policy state type");
+// @CYA EDIT: static_assert(false) will always trigger, we must make it dependent on the type
+            static_assert(!AZStd::is_same_v<PolicyStateType, PolicyStateType>, "Template paramater must be a valid policy state type");
+// @CYA END
         }
     }
 

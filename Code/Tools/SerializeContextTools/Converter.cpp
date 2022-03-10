@@ -613,6 +613,10 @@ namespace AZ
             AZStd::vector<AZ::IO::FixedMaxPath> gemModuleSourcePaths;
             AZ::ModuleManagerRequestBus::Broadcast([&gemModuleSourcePaths, &gemName, gemModuleClassId = entity.m_moduleClassId](AZ::ModuleManagerRequests* request)
             {
+// @CYA EDIT: VS 2022 wrongly warnings about gemModuleClassId not being used
+                (void) gemModuleClassId;
+// @CYA END
+
                 request->EnumerateModules([&gemModuleSourcePaths, &gemName, &gemModuleClassId](const AZ::ModuleData& moduleData) -> bool
                 {
                     AZ::Module* moduleInst = moduleData.GetModule();
