@@ -167,6 +167,11 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render");
 
                 behaviorContext->EBus<MeshComponentRequestBus>("RenderMeshComponentRequestBus")
+// @CYA EDIT: expose bus to python
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "render")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+// @CYA END
                     ->Event("GetModelAssetId", &MeshComponentRequestBus::Events::GetModelAssetId)
                     ->Event("SetModelAssetId", &MeshComponentRequestBus::Events::SetModelAssetId)
                     ->Event("GetModelAssetPath", &MeshComponentRequestBus::Events::GetModelAssetPath)
