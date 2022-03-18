@@ -376,6 +376,12 @@ namespace AZ
                             }
                         }
                     }
+// @CYA EDIT: fix animations breaking with dummies
+                    else
+                    {
+                        combinedAnimations.emplace(AZStd::move(animation));
+                    }
+// @CYA END
                 }
 
                 if (!combinedAnimations.empty())
