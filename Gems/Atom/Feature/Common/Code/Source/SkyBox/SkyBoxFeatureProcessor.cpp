@@ -184,6 +184,9 @@ namespace AZ
                         break;
                 }
             }
+// @CYA EDIT: Add SkyBoxFeatureProcessorNotificationBus to override OnSimulate
+            SkyBoxFeatureProcessorNotificationBus::Broadcast(&SkyBoxFeatureProcessorNotificationBus::Events::OnSimulateSkyBox, m_sceneSrg.get());
+// @CYA END
         }
 
         void SkyBoxFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)

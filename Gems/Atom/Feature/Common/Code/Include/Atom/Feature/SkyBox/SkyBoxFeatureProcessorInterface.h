@@ -16,8 +16,39 @@
 
 namespace AZ
 {
+
+// @CYA EDIT: Add SkyBoxFeatureProcessorNotificationBus to override OnSimulate
+    namespace RPI
+    {
+        class ShaderResourceGroup;
+    }
+// @CYA END
+
     namespace Render
     {
+// @CYA EDIT: Add SkyBoxFeatureProcessorNotificationBus to override OnSimulate
+        class SkyBoxFeatureProcessorNotifications : public AZ::EBusTraits
+        {
+        public:
+            //////////////////////////////////////////////////////////////////////////
+            // EBusTraits overrides
+            using BusIdType = AZ::EntityId;
+            using MutexType = AZStd::recursive_mutex;
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            //////////////////////////////////////////////////////////////////////////
+
+            virtual ~SkyBoxFeatureProcessorNotifications() = default;
+
+            //////////////////////////////////////////////////////////////////////////
+            // Notifications
+            virtual void OnSimulateSkyBox([[maybe_unused]] AZ::RPI::ShaderResourceGroup* sceneSrg){}
+            //////////////////////////////////////////////////////////////////////////
+        };
+
+        using SkyBoxFeatureProcessorNotificationBus = AZ::EBus<SkyBoxFeatureProcessorNotifications>;
+// @CYA END
+
         enum class SkyBoxMode
         {
             None = 0,
