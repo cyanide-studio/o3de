@@ -329,6 +329,18 @@ namespace EMotionFX
             }
             return result;
         }
+        
+// @CYA EDIT: add GetDuration
+        float SimpleMotionComponent::GetDuration() const
+        {
+            float result = 0.0f;
+            if (m_motionInstance)
+            {
+                result = m_motionInstance->GetDuration();
+            }
+            return result;
+        }
+// @CYA END
 
         void SimpleMotionComponent::Motion(AZ::Data::AssetId assetId)
         {

@@ -79,6 +79,9 @@ namespace EMotionFX
             float GetPlaySpeed() const override;
             void PlayTime(float time) override;
             float GetPlayTime() const override;
+// @CYA EDIT: add GetDuration
+            float GetDuration() const override;
+// @CYA END
             void Motion(AZ::Data::AssetId assetId) override;
             AZ::Data::AssetId  GetMotion() const override;
             void BlendInTime(float time) override;
