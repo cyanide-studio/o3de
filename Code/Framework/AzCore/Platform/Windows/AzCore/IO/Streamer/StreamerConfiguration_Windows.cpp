@@ -421,7 +421,9 @@ namespace AZ::IO
             hardwareInfo.m_profile = driveList.size() == 1 ? driveList.front().m_profile : "Generic";
             hardwareInfo.m_platformData = AZStd::make_any<DriveList>(AZStd::move(driveList));
 
-            return !driveList.empty();
+// @CYA EDIT: fix use after move
+            return !driveMappings.empty();
+// @CYA END
         }
         else
         {
