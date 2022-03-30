@@ -1058,7 +1058,10 @@ void LevelEditorMenuHandler::UpdateMRUFiles()
                 // Check file is still available
                 if (mruList->GetSize() > i)
                 {
-                    cryEdit->OpenDocumentFile((*mruList)[i].toUtf8().data());
+// @CYA EDIT:   Change the COpenSameLevelOptions (also add addToMostRecentFileList, because needed) - We are in file list of File -> Open Recent Level
+//              Why? Because we want to be able to reopen a level.
+                    cryEdit->OpenDocumentFile((*mruList)[i].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
+// @CYA END
                 }
             });
         m_actionManager->RegisterUpdateCallback(ID_FILE_MRU_FILE1 + i, cryEdit, &CCryEditApp::OnUpdateFileOpen);
