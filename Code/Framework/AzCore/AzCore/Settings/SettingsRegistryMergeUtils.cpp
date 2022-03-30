@@ -1463,7 +1463,9 @@ namespace AZ::SettingsRegistryMergeUtils
                     / externalSubdirectoryPath / Internal::GemJsonFilename;
                 if (AZ::IO::SystemFile::Exists(gemManifestPath.c_str()))
                 {
-                    VisitManifestJson(gemManifestCallback, gemManifestPath.Native(), GemNameKey);
+// @CYA EDIT: fix gem path having different path separators
+                    VisitManifestJson(gemManifestCallback, gemManifestPath.LexicallyNormal().Native(), GemNameKey);
+// @CYA END
                 }
             }
         };
