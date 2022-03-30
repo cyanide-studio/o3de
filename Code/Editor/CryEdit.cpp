@@ -3244,7 +3244,10 @@ void CCryEditApp::OnOpenLevel()
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
-        OpenDocumentFile(levelFileDialog.GetFileName().toUtf8().data());
+// @CYA EDIT:   Change the COpenSameLevelOptions (also add addToMostRecentFileList, because needed)
+//              Why? Because we want to be able to reopen a level.
+        OpenDocumentFile(levelFileDialog.GetFileName().toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
+// @CYA END
     }
 }
 
