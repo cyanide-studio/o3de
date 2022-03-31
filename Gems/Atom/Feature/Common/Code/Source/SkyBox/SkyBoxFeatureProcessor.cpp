@@ -525,8 +525,11 @@ namespace AZ
             result.SetZ(cieXYZ.GetX() * 0.0556434f + cieXYZ.GetY() * -0.2040259f + cieXYZ.GetZ() * 1.0572252f);
 
             result.Normalize();
-
-            return AZ::RPI::TransformColor(Color::CreateFromVector3(result.GetAsVector3()), AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg).GetAsVector4();
+// @CYA EDIT: Add OnComputeSunRGB
+            Color color = Color::CreateFromVector3(result.GetAsVector3());
+            SkyBoxFeatureProcessorNotificationBus::Broadcast(&SkyBoxFeatureProcessorNotificationBus::Events::OnComputeSunRGB, color);
+            return AZ::RPI::TransformColor(color, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg).GetAsVector4();
+// @CYA END
         }
 
         AZ::Vector3 SkyBoxFeatureProcessor::EvaluateCIEXYZ(int lambda)

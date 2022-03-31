@@ -59,7 +59,9 @@ namespace AZ
                                 ->Attribute(Edit::Attributes::Suffix, &PhysicalSkyComponentConfig::GetIntensitySuffix)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_sunRadiusFactor, "Sun Radius Factor", "A factor for Physical sun radius in millions of km. 1 unit is 695,508 km")
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
-                                ->Attribute(AZ::Edit::Attributes::Max, 2.f)
+// @CYA EDIT: increase max sun radius for physical sky
+                                ->Attribute(AZ::Edit::Attributes::Max, 20.f)
+// @CYA END
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &PhysicalSkyComponentConfig::m_turbidity, "Turbidity", "A measure of the aerosol content in the air. Default is 1.")
                                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                                 ->Attribute(AZ::Edit::Attributes::Max, 10)
