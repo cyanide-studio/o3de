@@ -42,7 +42,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // Notifications
-            virtual void OnSimulateSkyBox([[maybe_unused]] AZ::RPI::ShaderResourceGroup* sceneSrg){}
+            virtual void OnSimulateSkyBox([[maybe_unused]] AZ::RPI::ShaderResourceGroup* sceneSrg){};
+            virtual void OnComputeSunRGB([[maybe_unused]] AZ::Color& sunColor){};
             //////////////////////////////////////////////////////////////////////////
         };
 
