@@ -149,4 +149,9 @@ set(FILES
     Source/Editor/PropertyWidgets/SimulatedObjectSelectionHandler.cpp
     Source/Editor/PropertyWidgets/SimulatedObjectColliderTagHandler.h
     Source/Editor/PropertyWidgets/SimulatedObjectColliderTagHandler.cpp
+    
+# @CYA EDIT: add MultiMotionComponent
+    Source/Integration/Editor/Components/EditorMultiMotionComponent.h
+    Source/Integration/Editor/Components/EditorMultiMotionComponent.cpp
+# @CYA END
 )

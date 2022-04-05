@@ -43,4 +43,11 @@ set(FILES
     Source/Integration/Rendering/RenderBackendManager.h
     Source/Integration/Rendering/RenderBackendManager.cpp
     Source/Integration/Rendering/RenderActorSettings.h
+
+# @CYA EDIT: add MultiMotionComponent
+    Include/Integration/MultiMotionComponentBus.h
+    Include/Integration/EditorMultiMotionComponentBus.h
+    Source/Integration/Components/MultiMotionComponent.h
+    Source/Integration/Components/MultiMotionComponent.cpp
+# @CYA END
 )

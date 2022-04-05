@@ -12,6 +12,9 @@
 #include <Integration/Components/AnimGraphComponent.h>
 #include <Integration/Components/SimpleMotionComponent.h>
 #include <Integration/Components/SimpleLODComponent.h>
+// @CYA EDIT: add MultiMotionComponent
+#include <Integration/Components/MultiMotionComponent.h>
+// @CYA END
 #include <AzCore/Module/DynamicModuleHandle.h>
 
 #include <IGem.h>
@@ -23,6 +26,9 @@
 #   include <Integration/Editor/Components/EditorAnimGraphComponent.h>
 #   include <Integration/Editor/Components/EditorSimpleMotionComponent.h>
 #   include <Integration/Editor/Components/EditorSimpleLODComponent.h>
+// @CYA EDIT: add MultiMotionComponent
+#   include <Integration/Editor/Components/EditorMultiMotionComponent.h>
+// @CYA END
 #   include <SceneAPIExt/Behaviors/ActorGroupBehavior.h>
 #   include <SceneAPIExt/Behaviors/MotionGroupBehavior.h>
 #   include <SceneAPIExt/Behaviors/MotionRangeRuleBehavior.h>
@@ -66,6 +72,9 @@ namespace EMotionFX
                     AnimGraphComponent::CreateDescriptor(),
                     SimpleMotionComponent::CreateDescriptor(),
                     SimpleLODComponent::CreateDescriptor(),
+// @CYA EDIT: add MultiMotionComponent
+                    MultiMotionComponent::CreateDescriptor(),
+// @CYA END
 
     #if defined(EMOTIONFXANIMATION_EDITOR)
                     // Pipeline components
@@ -77,6 +86,9 @@ namespace EMotionFX
                     EditorAnimGraphComponent::CreateDescriptor(),
                     EditorSimpleMotionComponent::CreateDescriptor(),
                     EditorSimpleLODComponent::CreateDescriptor(),
+// @CYA EDIT: add MultiMotionComponent
+                    EditorMultiMotionComponent::CreateDescriptor(),
+// @CYA END
 
                     // EmotionFX asset builder
                     EMotionFXBuilder::EMotionFXBuilderComponent::CreateDescriptor(),
