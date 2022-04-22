@@ -260,7 +260,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                     {
                         AZ_Error(
                             "Prefab", false, "Failed to queue asset '%s' (%s) of type '%s' for loading while entering game mode.",
-                            asset->GetHint().c_str(), asset->GetId().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str(),
+// @CYA EDIT: Fix AssetId ToString buffer size
+                            asset->GetHint().c_str(), asset->GetId().ToString<AZStd::fixed_string<AZ::Data::AssetId::MaxStringBuffer>>().c_str(),
+// @CYA END
                             asset->GetType().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
                         return false;
                     }
@@ -285,7 +287,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             {
                 AZ_Error(
                     "Prefab", false, "Asset '%s' (%s) of type '%s' failed to preload while entering game mode", asset->GetHint().c_str(),
-                    asset->GetId().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str(),
+// @CYA EDIT: Fix AssetId ToString buffer size
+                    asset->GetId().ToString<AZStd::fixed_string<AZ::Data::AssetId::MaxStringBuffer>>().c_str(),
+// @CYA END
                     asset->GetType().ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
 
                 continue;

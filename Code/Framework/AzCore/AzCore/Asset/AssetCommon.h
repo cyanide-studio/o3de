@@ -55,6 +55,10 @@ namespace AZ
         {
             AZ_TYPE_INFO(AssetId, "{652ED536-3402-439B-AEBE-4A5DBC554085}");
 
+// @CYA EDIT: Fix AssetId ToString buffer size
+            static const size_t MaxStringBuffer = Uuid::MaxStringBuffer + 1 + 10; /// Uuid + sep + biggest decimal subId (null character included in Uuid)
+// @CYA END
+
             /// Create asset id in invalid state
             AssetId();
             AssetId(const Uuid& guid, u32 subId = 0);
