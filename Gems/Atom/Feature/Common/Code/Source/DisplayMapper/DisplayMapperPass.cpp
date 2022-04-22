@@ -84,7 +84,9 @@ namespace AZ
             // display mapper parameters.
             if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->GetAttachment())
             {
-                m_displayBufferFormat = m_swapChainAttachmentBinding->GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+// @CYA EDIT: Fix crash when binding swapchain to imported texture attachment as spawnchain target
+                m_displayBufferFormat = m_swapChainAttachmentBinding->GetAttachment()->m_descriptor.m_image.m_format;
+// @CYA END
             }
 
             if (m_displayBufferFormat != RHI::Format::Unknown)

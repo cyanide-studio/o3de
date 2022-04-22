@@ -44,7 +44,9 @@ namespace AZ
             RHI::Format swapChainFormat = RHI::Format::Unknown;
             if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->GetAttachment())
             {
-                swapChainFormat = m_swapChainAttachmentBinding->GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+// @CYA EDIT: Fix crash when binding swapchain to imported texture attachment as spawnchain target
+                swapChainFormat = m_swapChainAttachmentBinding->GetAttachment()->m_descriptor.m_image.m_format;
+// @CYA END
             }
 
             // Update the children passes
