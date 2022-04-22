@@ -371,6 +371,7 @@ namespace EMotionFX
                 if (m_channels[channel].m_lastMotionInstance && m_channels[channel].m_configuration.m_blendOutTime > 0.0f)
                 {
                     m_channels[channel].m_lastMotionInstance->Stop(m_channels[channel].m_configuration.m_blendOutTime);
+                    m_channels[channel].m_lastMotionInstance->SetDeleteOnZeroWeight(true);
                 }
 
                 // Reuse the old, last motion asset if possible. Otherwise, request a load.
