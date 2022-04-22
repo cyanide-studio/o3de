@@ -120,7 +120,9 @@ namespace HttpRequestor
 
     void Manager::HandleRequest(const Parameters& httpRequestParameters)
     {
-        Aws::Client::ClientConfiguration config;
+// @CYA EDIT: fix Aws ClientConfiguration spamming aws server
+        static Aws::Client::ClientConfiguration config;
+// @CYA END
         config.enableTcpKeepAlive = AZ_TRAIT_AZFRAMEWORK_AWS_ENABLE_TCP_KEEP_ALIVE_SUPPORTED;
         std::shared_ptr<Aws::Http::HttpClient> httpClient = Aws::Http::CreateHttpClient(config);
 
