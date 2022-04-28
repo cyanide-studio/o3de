@@ -629,12 +629,11 @@ namespace ImageProcessingAtom
             if (presetFilterMap.find(fileMask) != presetFilterMap.end())
             {
                 maskPresets = &presetFilterMap.find(fileMask)->second;
+                // only one preset matches? use it
+                if (maskPresets->size() == 1)
+                    return *maskPresets->begin();
             }
         }
-
-        // only one preset matches? use it
-        if (maskPresets && maskPresets->size() == 1)
-            return *maskPresets->begin();
 
         // if there's no preset or more than one, try to identify the best preset based on alpha
         PresetName defaultPreset = m_defaultPreset;
