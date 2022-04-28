@@ -617,39 +617,49 @@ namespace ImageProcessingAtom
 
     PresetName BuilderSettingManager::GetSuggestedPreset(AZStd::string_view imageFilePath) const
     {
-        PresetName emptyPreset;
-
-
+//CYA: Rework function to handle multiples presets for mask if one of them is the default preset
         //get file mask of this image file
         AZStd::string fileMask = GetFileMask(imageFilePath);
 
-        PresetName outPreset = emptyPreset;
-
         //use the preset filter map to find
-        if (outPreset.IsEmpty() && !fileMask.empty())
+        const AZStd::unordered_set<PresetName>* maskPresets = nullptr;
+        if (!fileMask.empty())
         {
             auto& presetFilterMap = GetPresetFilterMap();
             if (presetFilterMap.find(fileMask) != presetFilterMap.end())
             {
-                outPreset = *(presetFilterMap.find(fileMask)->second.begin());
+                maskPresets = &presetFilterMap.find(fileMask)->second;
             }
         }
 
-        if (outPreset == emptyPreset)
-        {        
-            auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
-            if (image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent
-                || image->GetAlphaContent() == EAlphaContent::eAlphaContent_OnlyWhite)
-            {
-                outPreset = m_defaultPreset;
-            }
-            else
-            {
-                outPreset = m_defaultPresetAlpha;
-            }
+        // only one preset matches? use it
+        if (maskPresets && maskPresets->size() == 1)
+            return *maskPresets->begin();
+
+        // if there's no preset or more than one, try to identify the best preset based on alpha
+        PresetName defaultPreset = m_defaultPreset;
+        auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
+        if (image)
+        {
+            EAlphaContent imageAlphaContent = image->GetAlphaContent();
+            if (imageAlphaContent != EAlphaContent::eAlphaContent_Absent && imageAlphaContent != EAlphaContent::eAlphaContent_OnlyWhite)
+                defaultPreset = m_defaultPresetAlpha;
         }
 
-        return outPreset;
+        //if default preset is one of our presets, take it
+        if (maskPresets)
+        {
+            if (maskPresets->find(defaultPreset) != maskPresets->end())
+                return defaultPreset;
+
+            //else take one of our preset at random (FIXME: this should be the first of the list but is random because of unordered_set, maybe switch to vector?)
+            return *maskPresets->begin();
+        }
+        else
+        {
+            return defaultPreset;
+        }
+//CYA END
     }
 
     AZStd::vector<AZStd::string> BuilderSettingManager::GetPossiblePresetPaths(const PresetName& presetName) const
