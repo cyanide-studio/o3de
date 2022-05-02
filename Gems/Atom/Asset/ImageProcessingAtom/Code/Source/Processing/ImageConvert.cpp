@@ -323,7 +323,9 @@ namespace ImageProcessingAtom
             break;
         case StepSaveToFile:
             // save to file
-            if (!m_input->m_isPreview)
+// CYA: Allow to process images in memory
+            if (!m_input->m_isPreview && m_input->m_shouldSaveFile)
+// CYA END
             {
                 m_isSucceed = SaveOutput();
             }

@@ -82,6 +82,14 @@ namespace ImageProcessingAtom
             const AZStd::string& outputDir,
             const AZ::Data::AssetId& sourceAssetId,
             const AZStd::string& sourceAssetName) override;
+// CYA: Add a way to convert images in memory
+        IImageObjectPtr ConvertImageObjectInMemory(
+            IImageObjectPtr imageObject,
+            const AZStd::string& presetName,
+            const AZStd::string& platformName,
+            const AZ::Data::AssetId& sourceAssetId,
+            const AZStd::string& sourceAssetName) override;
+// CYA END
         bool DoesSupportPlatform(const AZStd::string& platformId) override;
         bool IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName) override;
         ////////////////////////////////////////////////////////////////////////

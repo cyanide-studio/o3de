@@ -84,6 +84,10 @@ namespace ImageProcessingAtom
         AZ::Data::AssetId m_sourceAssetId;
         // List of output products for the job, appended to by the ImageConvertProcess
         AZStd::vector<AssetBuilderSDK::JobProduct>* m_jobProducts = nullptr;
+
+//CYA: Allow to process images in memory
+        bool m_shouldSaveFile = true;
+//CYA END
     };
 
     /**
