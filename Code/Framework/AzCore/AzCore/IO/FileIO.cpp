@@ -246,6 +246,12 @@ namespace AZ::IO
             }
             if (AnyFlag(mode & OpenMode::ModeBinary))
             {
+// @CYA EDIT: allow read+write of binary file
+                if (AnyFlag(mode & OpenMode::ModeRead))
+                {
+                    return "wb+";
+                }
+// @CYA END
                 return "wb";
             }
             if (AnyFlag(mode & OpenMode::ModeText))
