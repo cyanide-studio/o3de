@@ -587,7 +587,9 @@ namespace ImageProcessingAtom
         metafilePath = AZStd::string();
     }
 
-    AZStd::string GetFileMask(AZStd::string_view imageFilePath)
+// CYA Expose GetFileMask
+    AZStd::string BuilderSettingManager::GetFileMask(AZStd::string_view imageFilePath) const
+// CYA END
     {
         //get file name
         AZStd::string fileName;
@@ -604,6 +606,35 @@ namespace ImageProcessingAtom
 
         return AZStd::string();
     }
+
+// CYA Expose default presets
+    PresetName BuilderSettingManager::GetDefaultPreset() const
+    {
+        return m_defaultPreset;
+    }
+
+    PresetName BuilderSettingManager::GetDefaultAlphaPreset() const
+    {
+        return m_defaultPresetAlpha;
+    }
+// CYA END
+
+// CYA Add GetPresetsForFileMask
+    AZStd::vector<PresetName> BuilderSettingManager::GetPresetsForFileMask(const FileMask& fileMask) const
+    {
+        AZStd::vector<PresetName> presets;
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
+        if (auto it = m_presetFilterMap.find(fileMask); it != m_presetFilterMap.end())
+        {
+            for (const PresetName& presetName : it->second)
+                presets.push_back(presetName);
+        }
+
+        return presets;
+
+    }
+// CYA END
 
     bool BuilderSettingManager::IsValidPreset(PresetName presetName) const
     {

@@ -257,6 +257,38 @@ namespace ImageProcessingAtom
         return info->bSquarePow2;
     }
 
+// CYA Expose preset handling functions
+    FileMask BuilderPluginComponent::GetFileMask(AZStd::string_view imageFilePath)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMask(imageFilePath);
+    }
+
+    AZStd::vector<AZStd::string> BuilderPluginComponent::GetFileMasksForPreset(const PresetName& presetName)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMasksForPreset(presetName);
+    }
+
+    AZStd::vector<PresetName> BuilderPluginComponent::GetPresetsForFileMask(const FileMask& fileMask)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetPresetsForFileMask(fileMask);
+    }
+
+    PresetName BuilderPluginComponent::GetDefaultPreset()
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetDefaultPreset();
+    }
+
+    PresetName BuilderPluginComponent::GetDefaultAlphaPreset()
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->GetDefaultAlphaPreset();
+    }
+
+    bool BuilderPluginComponent::IsValidPreset(PresetName presetName)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->IsValidPreset(presetName);
+    }
+// CYA END
+
     void ImageBuilderWorker::ShutDown()
     {
         // it is important to note that this will be called on a different thread than your process job thread
