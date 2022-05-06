@@ -587,9 +587,9 @@ namespace ImageProcessingAtom
         metafilePath = AZStd::string();
     }
 
-// CYA Expose GetFileMask
+// @CYA EDIT: Expose GetFileMask
     AZStd::string BuilderSettingManager::GetFileMask(AZStd::string_view imageFilePath) const
-// CYA END
+// @CYA END
     {
         //get file name
         AZStd::string fileName;
@@ -607,7 +607,7 @@ namespace ImageProcessingAtom
         return AZStd::string();
     }
 
-// CYA Expose default presets
+// @CYA EDIT: Expose default presets
     PresetName BuilderSettingManager::GetDefaultPreset() const
     {
         return m_defaultPreset;
@@ -617,9 +617,9 @@ namespace ImageProcessingAtom
     {
         return m_defaultPresetAlpha;
     }
-// CYA END
+// @CYA END
 
-// CYA Add GetPresetsForFileMask
+// @CYA EDIT: Add GetPresetsForFileMask
     AZStd::vector<PresetName> BuilderSettingManager::GetPresetsForFileMask(const FileMask& fileMask) const
     {
         AZStd::vector<PresetName> presets;
@@ -634,7 +634,7 @@ namespace ImageProcessingAtom
         return presets;
 
     }
-// CYA END
+// @CYA END
 
     bool BuilderSettingManager::IsValidPreset(PresetName presetName) const
     {
@@ -648,7 +648,7 @@ namespace ImageProcessingAtom
 
     PresetName BuilderSettingManager::GetSuggestedPreset(AZStd::string_view imageFilePath) const
     {
-//CYA: Rework function to handle multiples presets for mask if one of them is the default preset
+// @CYA EDIT: Rework function to handle multiples presets for mask if one of them is the default preset
         //get file mask of this image file
         AZStd::string fileMask = GetFileMask(imageFilePath);
 
@@ -689,7 +689,7 @@ namespace ImageProcessingAtom
         {
             return defaultPreset;
         }
-//CYA END
+// @CYA END
     }
 
     AZStd::vector<AZStd::string> BuilderSettingManager::GetPossiblePresetPaths(const PresetName& presetName) const

@@ -82,18 +82,18 @@ namespace ImageProcessingAtom
             const AZStd::string& outputDir,
             const AZ::Data::AssetId& sourceAssetId,
             const AZStd::string& sourceAssetName) override;
-// CYA: Add a way to convert images in memory
+// @CYA EDIT: Add a way to convert images in memory
         IImageObjectPtr ConvertImageObjectInMemory(
             IImageObjectPtr imageObject,
             const AZStd::string& presetName,
             const AZStd::string& platformName,
             const AZ::Data::AssetId& sourceAssetId,
             const AZStd::string& sourceAssetName) override;
-// CYA END
+// @CYA END
         bool DoesSupportPlatform(const AZStd::string& platformId) override;
         bool IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName) override;
 
-// CYA Expose preset handling functions
+// @CYA EDIT: Expose preset handling functions
         FileMask GetFileMask(AZStd::string_view imageFilePath) override;
 
         AZStd::vector<AZStd::string> GetFileMasksForPreset(const PresetName& presetName) override;
@@ -105,7 +105,7 @@ namespace ImageProcessingAtom
         PresetName GetDefaultAlphaPreset() override;
 
         bool IsValidPreset(PresetName presetName) override;
-// CYA END
+// @CYA END
 
         ////////////////////////////////////////////////////////////////////////
 

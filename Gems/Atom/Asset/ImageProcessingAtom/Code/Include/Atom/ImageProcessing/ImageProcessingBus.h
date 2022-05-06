@@ -65,14 +65,14 @@ namespace ImageProcessingAtom
             const AZ::Data::AssetId& sourceAssetId,
             const AZStd::string& sourceAssetName) = 0;
 
-//CYA Add bus to convert image without registering it to filesystem
+// @CYA EDIT: Add bus to convert image without registering it to filesystem
         virtual IImageObjectPtr ConvertImageObjectInMemory(
             IImageObjectPtr imageObject,
             const AZStd::string& presetName,
             const AZStd::string& platformName,
             const AZ::Data::AssetId& sourceAssetId,
             const AZStd::string& sourceAssetName) = 0;
-//CYA END
+// @CYA END
 
         //! Return whether the specified platform is supported by the image builder
         virtual bool DoesSupportPlatform(const AZStd::string& platformId) = 0;
@@ -80,7 +80,7 @@ namespace ImageProcessingAtom
         //! Return whether the specified preset requires an image to be square and a power of 2
         virtual bool IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName) = 0;
 
-//CYA Expose preset handling functions
+// @CYA EDIT: Expose preset handling functions
         virtual FileMask GetFileMask(AZStd::string_view imageFilePath) = 0;
 
         virtual AZStd::vector<AZStd::string> GetFileMasksForPreset(const PresetName& presetName) = 0;
@@ -92,7 +92,7 @@ namespace ImageProcessingAtom
         virtual PresetName GetDefaultAlphaPreset() = 0;
 
         virtual bool IsValidPreset(PresetName presetName) = 0;
-//CYA END
+// @CYA END
     };
 
     using ImageBuilderRequestBus = AZ::EBus<ImageBuilderRequests>;

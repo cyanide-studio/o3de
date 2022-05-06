@@ -196,7 +196,7 @@ namespace ImageProcessingAtom
         return outProducts;
     }
 
-//CYA: Add a way to convert images in memory
+// @CYA EDIT: Add a way to convert images in memory
     IImageObjectPtr BuilderPluginComponent::ConvertImageObjectInMemory(
         IImageObjectPtr imageObject,
         const AZStd::string& presetName,
@@ -236,7 +236,7 @@ namespace ImageProcessingAtom
         else
             return nullptr;
     }
-//CYA END
+// @CYA END
 
     bool BuilderPluginComponent::DoesSupportPlatform(const AZStd::string& platformId)
     {
@@ -257,7 +257,7 @@ namespace ImageProcessingAtom
         return info->bSquarePow2;
     }
 
-// CYA Expose preset handling functions
+// @CYA EDIT: Expose preset handling functions
     FileMask BuilderPluginComponent::GetFileMask(AZStd::string_view imageFilePath)
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMask(imageFilePath);
@@ -287,7 +287,7 @@ namespace ImageProcessingAtom
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->IsValidPreset(presetName);
     }
-// CYA END
+// @CYA END
 
     void ImageBuilderWorker::ShutDown()
     {
