@@ -416,7 +416,7 @@ void MainWindow::Activate()
 
 // @CYA EDIT: Add setting to disable startup scan
     
-    connect(ui->cya_fastScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
+    connect(ui->cya_fastScanButton, &QPushButton::clicked, this, &MainWindow::OnFastScanButtonClicked);
 
     settings.beginGroup("Cya_Extensions");
     bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool();
