@@ -110,6 +110,10 @@ public Q_SLOTS:
     void OnRescanButtonClicked();
     void HighlightAsset(QString assetPath);
 
+// @CYA EDIT: Add setting to disable startup scan
+    void OnFastScanButtonClicked();
+// @CYA END
+
     void OnAssetTabChange(int index);
 
 protected Q_SLOTS:

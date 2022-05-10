@@ -113,6 +113,10 @@ public:
 
     void Rescan();
 
+// @CYA EDIT: Add setting to disable startup scan
+    void FastScan();
+// @CYA END
+
     bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
 Q_SIGNALS:

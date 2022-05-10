@@ -413,6 +413,30 @@ void MainWindow::Activate()
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
     ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
+
+// @CYA EDIT: Add setting to disable startup scan
+    
+    connect(ui->cya_fastScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
+
+    settings.beginGroup("Cya_Extensions");
+    bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool();
+    settings.endGroup();
+
+    QObject::connect(ui->cya_skipinitialdatabaseCheck, &QCheckBox::stateChanged, this,
+        [](int newCheckState)
+    {
+        bool newOption = newCheckState == Qt::Checked ? true : false;
+        // don't change initial scan skipping feature value, as it's only relevant on the first scan
+        // save the value for the next run
+        QSettings settingsInCallback;
+        settingsInCallback.beginGroup("Cya_Extensions");
+        settingsInCallback.setValue("SkipInitialScan", QVariant(newOption));
+        settingsInCallback.endGroup();
+    });
+
+    m_guiApplicationManager->GetAssetProcessorManager()->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
+    ui->cya_skipinitialdatabaseCheck->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
+// @CYA END
 }
 
 void MainWindow::SetupAssetSelectionCaching()
@@ -951,6 +975,13 @@ void MainWindow::HighlightAsset(QString assetPath)
     // select the first item in the list
     ui->jobTreeView->setCurrentIndex(m_jobSortFilterProxy->index(0, 0));
 }
+
+// @CYA EDIT: Add setting to disable startup scan
+void MainWindow::OnFastScanButtonClicked()
+{
+    m_guiApplicationManager->FastScan();
+}
+// @CYA END
 
 void MainWindow::OnAssetTabChange(int index)
 {

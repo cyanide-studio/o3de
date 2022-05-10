@@ -2851,6 +2851,21 @@ namespace AssetProcessor
 
     void AssetProcessorManager::AssessFilesFromScanner(QSet<AssetFileInfo> filePaths)
     {
+// @CYA EDIT: Add setting to disable startup scan
+        if (m_initialScanSkippingFeature)
+        {
+            for (const AssetFileInfo& fileInfo : filePaths)
+                AddKnownFoldersRecursivelyForFile(fileInfo.m_filePath, fileInfo.m_scanFolder->ScanPath());
+
+            m_sourceFilesInDatabase.clear();
+            m_fileModTimes.clear();
+            m_fileHashes.clear();
+
+            m_initialScanSkippingFeature = false;
+            return;
+        }
+// @CYA END
+
         int processedFileCount = 0;
 
         for (const AssetFileInfo& fileInfo : filePaths)
@@ -4646,6 +4661,13 @@ namespace AssetProcessor
     {
         m_allowModtimeSkippingFeature = enable;
     }
+
+// @CYA EDIT: Add setting to disable startup scan
+    void AssetProcessorManager::SetInitialScanSkippingFeature(bool enable)
+    {
+        m_initialScanSkippingFeature = enable;
+    }
+// @CYA END
 
     void AssetProcessorManager::SetQueryLogging(bool enableLogging)
     {

@@ -1197,6 +1197,51 @@
         </widget>
         <widget class="QWidget" name="ToolsPage">
          <layout class="QVBoxLayout" name="verticalLayout_3">
+<!--@CYA EDIT: Add setting to disable startup scan -->
+          <item>
+           <widget class="QCheckBox" name="cya_skipinitialdatabaseCheck">
+            <property name="styleSheet">
+             <string notr="true">font: 12pt;</string>
+            </property>
+            <property name="text">
+             <string>Disable startup scan</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="cya_skipinitialcheck_horizontalLayout">
+            <item>
+             <spacer name="cya_indentSpacer1">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="cya_skipinitialdatabaseDescription">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This mode disables the startup scan (modified file changes while the asset processor wasn't running won't be detected).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="scaledContents">
+               <bool>false</bool>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+<!--@CYA END -->
           <item>
            <widget class="QCheckBox" name="modtimeSkippingCheckBox">
             <property name="styleSheet">
@@ -1256,6 +1301,97 @@
             </property>
            </spacer>
           </item>
+<!--@CYA EDIT: Add setting to disable startup scan -->
+          <item>
+           <widget class="QLabel" name="cya_fastScanHeader">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;Fast scan&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="cya_fastScanHorizontalLayout">
+            <item>
+             <spacer name="cya_indentSpacer2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="cya_fastScanDescriptionText">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Scan modified files based on their last modified time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="scaledContents">
+               <bool>false</bool>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="cya_fastScanHorizontalLayout2">
+            <item>
+             <spacer name="cya_fastScanhorizontalSpacer_1">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cya_fastScanButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Start Fast Scan</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="cya_fastScanHorizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+<!--@CYA END -->
           <item>
            <widget class="QLabel" name="fullScanHeader">
             <property name="text">

@@ -315,6 +315,14 @@ void ApplicationManagerBase::Rescan()
     GetAssetScanner()->StartScan();
 }
 
+// @CYA EDIT: Add setting to disable startup scan
+void ApplicationManagerBase::FastScan()
+{
+    m_assetProcessorManager->SetEnableModtimeSkippingFeature(true);
+    GetAssetScanner()->StartScan();
+}
+// @CYA END
+
 void ApplicationManagerBase::InitAssetCatalog()
 {
     using namespace AssetProcessor;
