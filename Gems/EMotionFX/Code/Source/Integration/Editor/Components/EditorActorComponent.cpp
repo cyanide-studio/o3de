@@ -884,20 +884,21 @@ namespace EMotionFX
             // Enable/disable debug drawing.
             OnRenderFlagChanged();
 
+// @CYA EDIT: move actor destruction before asset checking. Passing invalid id to SetActorAsset can now trigger current actor deletion.
+            if (m_actorInstance)
+            {
+                ActorComponentNotificationBus::Event(
+                    GetEntityId(), &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed, m_actorInstance.get());
+                m_actorInstance.reset();
+            }
+// @CYA END
+
             // Create actor instance.
             auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
             if (!actorAsset)
             {
                 return;
-            }
-
-            if (m_actorInstance)
-            {
-                ActorComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
-                    m_actorInstance.get());
             }
 
             m_actorInstance = actorAsset->CreateInstance(GetEntity());

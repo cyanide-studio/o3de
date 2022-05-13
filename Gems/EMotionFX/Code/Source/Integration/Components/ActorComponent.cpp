@@ -278,6 +278,9 @@ namespace EMotionFX
             AZ::TickBus::Handler::BusConnect();
 
             const AZ::EntityId entityId = GetEntityId();
+// @CYA EDIT: fix ActorComponentRequestBus not listening when asset is invalid
+            ActorComponentRequestBus::Handler::BusConnect(entityId);
+// @CYA END
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusConnect(entityId);
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusConnect(entityId);
@@ -407,6 +410,10 @@ namespace EMotionFX
 
         void ActorComponent::CheckActorCreation()
         {
+// @CYA EDIT: move actor destruction before asset checking. Passing invalid id to SetActorAsset can now trigger current actor deletion.
+            DestroyActor();
+// @CYA END
+
             // Create actor instance.
             auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
@@ -415,16 +422,12 @@ namespace EMotionFX
                 return;
             }
 
-            DestroyActor();
-
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
             if (!m_actorInstance)
             {
                 AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
                 return;
             }
-
-            ActorComponentRequestBus::Handler::BusConnect(GetEntityId());
 
             ActorComponentNotificationBus::Event(
                 GetEntityId(),
