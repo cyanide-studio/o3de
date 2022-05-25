@@ -13,6 +13,12 @@
 #include <RHI/PhysicalDevice.h>
 #include <Atom/RHI/ValidationLayer.h>
 
+// @CYA EDIT: Upgrade Aftermath support (and add it to Vulkan RHI)
+#if defined(USE_NSIGHT_AFTERMATH)
+#include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
+#endif
+// @CYA END
+
 namespace AZ
 {
     namespace Vulkan
@@ -54,6 +60,12 @@ namespace AZ
             VkInstance m_instance = VK_NULL_HANDLE;
             AZStd::unique_ptr<FunctionLoader> m_functionLoader;
             RHI::PhysicalDeviceList m_supportedDevices;
+
+// @CYA EDIT: Upgrade Aftermath support (and add it to Vulkan RHI)
+#if defined(USE_NSIGHT_AFTERMATH)
+            GpuCrashTracker m_gpuCrashHandler;
+#endif
+// @CYA END
         };
     }
 }

@@ -7,3 +7,6 @@
 #
 
 set(PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED FALSE)
+# @CYA EDIT: Upgrade Aftermath support (and add it to Vulkan RHI)
+set(PAL_TRAIT_AFTERMATH_AVAILABLE FALSE)
+# @CYA END

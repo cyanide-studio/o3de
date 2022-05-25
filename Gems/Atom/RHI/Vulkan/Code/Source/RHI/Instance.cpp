@@ -46,6 +46,11 @@ namespace AZ
 
         bool Instance::Init(const Descriptor& descriptor)
         {
+// @CYA EDIT: Upgrade Aftermath support (and add it to Vulkan RHI)
+#if defined(USE_NSIGHT_AFTERMATH)
+            m_gpuCrashHandler.EnableGPUCrashDumps();
+#endif
+// @CYA END
             m_descriptor = descriptor;
             if (GetValidationMode() != RHI::ValidationMode::Disabled)
             {
@@ -56,7 +61,9 @@ namespace AZ
                 AZ::Utils::SetEnv("VK_LAYER_PATH", exeDirectory, 1);
 
                 RawStringList validationLayers = Debug::GetValidationLayers();
-                m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());
+// @CYA EDIT: Fix optional layer insertion
+                m_descriptor.m_optionalLayers.insert(m_descriptor.m_optionalLayers.end(), validationLayers.begin(), validationLayers.end());
+// @CYA END
                 m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
                 m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             }
