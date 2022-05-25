@@ -138,7 +138,9 @@ namespace AZ
     {                                                                                                                                                                                 \
         using namespace AZ::TraceInternal;                                                                                                                                            \
         [[maybe_unused]] const auto& rTraceFmtCompileTimeCheckExpressionHelper = (expression); /* This is needed for edge cases for expressions containing lambdas, that were unsupported before C++20 */   \
-        constexpr ExpressionValidResult isValidTraceFmtResult = ExpressionIsValid<decltype(rTraceFmtCompileTimeCheckExpressionHelper)>::value;                                        \
+/* @CYA EDIT: mark isValidTraceFmtResult to fix VS2022 compilation */ \
+        [[maybe_unused]] constexpr ExpressionValidResult isValidTraceFmtResult = ExpressionIsValid<decltype(rTraceFmtCompileTimeCheckExpressionHelper)>::value;                                        \
+/* @CYA END */ \
         /* Assert different message depending whether it's const char array or if we have extra arguments */                                                                          \
         static_assert(!(isVaArgs) ? isValidTraceFmtResult != ExpressionValidResult::Invalid_ConstCharArray : true, baseMsg " " msg);                                                    \
         static_assert(isVaArgs  ? isValidTraceFmtResult != ExpressionValidResult::Invalid_ConstCharArray : true, baseMsg " " msgVargs);                                               \

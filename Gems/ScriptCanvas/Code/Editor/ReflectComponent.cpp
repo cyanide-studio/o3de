@@ -214,7 +214,9 @@ namespace ScriptCanvasEditor
         };
 
         // Behavior Context Global Methods
-        for (auto behaviorMethod : AZStd::ranges::views::values(behaviorContext->m_methods))
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+        for ([[maybe_unused]] auto& [name, behaviorMethod] : behaviorContext->m_methods)
+// @CYA END
         {
             if (behaviorMethod != nullptr)
             {
@@ -223,7 +225,9 @@ namespace ScriptCanvasEditor
         }
 
         // Behavior Context Global Properties
-        for (auto behaviorProperty : AZStd::ranges::views::values(behaviorContext->m_properties))
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+        for ([[maybe_unused]] auto& [name, behaviorProperty] : behaviorContext->m_properties)
+// @CYA END
         {
             // Only the getter can reflect a method that returns an AZ::Event& or AZ::Event*
             if (behaviorProperty != nullptr && behaviorProperty->m_getter != nullptr)
@@ -234,11 +238,15 @@ namespace ScriptCanvasEditor
 
         // Behavior Context Class Methods
         // Behavior Context Getter Property Methods
-        for (auto behaviorClass : AZStd::ranges::views::values(behaviorContext->m_classes))
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+        for ([[maybe_unused]] auto& [name, behaviorClass] : behaviorContext->m_classes)
+// @CYA END
         {
             if (behaviorClass != nullptr)
             {
-                for (auto behaviorClassMethod : AZStd::ranges::views::values(behaviorClass->m_methods))
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+                for ([[maybe_unused]] auto& [name2, behaviorClassMethod] : behaviorClass->m_methods)
+// @CYA END
                 {
                     if (behaviorClassMethod != nullptr)
                     {
@@ -247,7 +255,9 @@ namespace ScriptCanvasEditor
                 }
 
                 // Behavior Context Global Properties
-                for (auto behaviorClassProperty : AZStd::ranges::views::values(behaviorClass->m_properties))
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+                for ([[maybe_unused]] auto& [name2, behaviorClassProperty] : behaviorContext->m_properties)
+// @CYA END
                 {
                     // Only the getter can reflect a method that returns an AZ::Event& or AZ::Event*
                     if (behaviorClassProperty != nullptr && behaviorClassProperty->m_getter != nullptr)
@@ -259,11 +269,15 @@ namespace ScriptCanvasEditor
         }
 
         // Behavior Context EBus event sender
-        for (auto behaviorEbus : AZStd::ranges::views::values(behaviorContext->m_ebuses))
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+        for ([[maybe_unused]] auto& [name, behaviorEbus] : behaviorContext->m_ebuses)
+// @CYA END
         {
             if (behaviorEbus != nullptr)
             {
-                for (auto behaviorEventSender : AZStd::ranges::views::values(behaviorEbus->m_events))
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+                for ([[maybe_unused]] auto& [name2, behaviorEventSender] : behaviorEbus->m_events)
+// @CYA END
                 {
                     // An event sender has the same signature for all of its functions and it's guaranteed
                     // that it will have a valid m_broadcast.

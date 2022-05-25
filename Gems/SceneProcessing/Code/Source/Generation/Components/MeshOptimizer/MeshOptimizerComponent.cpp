@@ -514,7 +514,9 @@ namespace AZ::SceneGenerationComponents
         auto* posLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerVector3>(vertexCount, false, true);
         auto* normalsLayer = meshBuilder.AddLayer<MeshBuilder::MeshBuilderVertexAttributeLayerVector3>(vertexCount, false, true);
 
-        const auto makeLayersForData = [&meshBuilder, vertexCount](const auto& dataView)
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+        const auto makeLayersForData = [&](const auto& dataView)
+// @CYA END
         {
             using InputDataType = typename AZStd::remove_cvref_t<decltype(*dataView.begin())>::type;
 
@@ -535,7 +537,9 @@ namespace AZ::SceneGenerationComponents
             // the views provided by SceneAPI do not have a size() method, so compute it
             const size_t layerCount = AZStd::distance(dataView.begin(), dataView.end());
             AZStd::vector<ResultingLayerType*> layers(layerCount);
-            AZStd::generate(layers.begin(), layers.end(), [&meshBuilder, vertexCount]
+// @CYA EDIT: Fix compilation with VS 17.2 (regression)
+            AZStd::generate(layers.begin(), layers.end(), [&]
+// @CYA END
             {
                 return meshBuilder.AddLayer<ResultingLayerType>(vertexCount);
             });
