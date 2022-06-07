@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/IO/Path/Path.h>
@@ -28,6 +29,10 @@ namespace AzFramework
         AZStd::string m_gemName; //!< The name of the gem as seen in the gem.json
         AZStd::vector<AZStd::string> m_gemTargetNames; //!< The target name of loaded modules from the gem
         AZStd::vector<AZ::IO::Path> m_absoluteSourcePaths; //!< Where the gem's source path folder are located(as an absolute path)
+
+// @CYA EDIT: Add gem order
+        AZStd::optional<int> m_gemOrder;
+// @CYA END
 
         static constexpr const char* GetGemAssetFolder() { return "Assets"; }
         static constexpr const char* GetGemRegistryFolder()

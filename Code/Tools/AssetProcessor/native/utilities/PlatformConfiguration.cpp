@@ -1697,7 +1697,9 @@ namespace AssetProcessor
                     isRoot,
                     isRecursive,
                     platforms,
-                    gemOrder,
+// @CYA EDIT: Add gem order
+                    gemElement.m_gemOrder.value_or(gemOrder),
+// @CYA END
                     /*scanFolderId*/ 0,
                     /*canSaveNewAssets*/ true)); // Users can create assets like slices in Gem asset folders.
 
@@ -1717,7 +1719,10 @@ namespace AssetProcessor
                     isRoot,
                     isRecursive,
                     platforms,
-                    gemOrder));
+// @CYA EDIT: Add gem order
+                    (gemElement.m_gemOrder.has_value()) ? (*gemElement.m_gemOrder + 1) : gemOrder
+// @CYA END
+                ));
             }
         }
     }

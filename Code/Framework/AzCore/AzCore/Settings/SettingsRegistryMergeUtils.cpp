@@ -806,6 +806,13 @@ namespace AZ::SettingsRegistryMergeUtils
                     ManifestGemsRootKey, AZ_STRING_ARG(gemName));
                 registry.Set(manifestGemJsonPath, gemRootPath);
             }
+// @CYA EDIT: Add gem order
+            else if (manifestKey.ends_with("/Order"))
+            {
+                const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s", ManifestGemsRootKey, AZ_STRING_ARG(manifestKey));
+                registry.Set(manifestGemJsonPath, aznumeric_cast<s64>(AZStd::stoi(AZStd::string(gemName))));
+            }
+// @CYA END
         };
 
         VisitAllManifestGems(registry, MergeGemPathToRegistry);
@@ -1450,6 +1457,15 @@ namespace AZ::SettingsRegistryMergeUtils
         // Invoke the visitor callback with the tuple of gem name, gem path
         auto manifestRootDirView = AZ::IO::PathView(manifestPath).ParentPath();
         gemManifestCallback(manifestObjectKey, manifestObjectName, manifestRootDirView.Native());
+
+// @CYA EDIT: add gem_order field
+        if (manifestPath.ends_with("gem.json"))
+        {
+            s64 gemOrder;
+            if (manifestJsonRegistry.Get(gemOrder, GemOrderKey))
+                gemManifestCallback(manifestObjectName + "/Order", AZStd::to_string(gemOrder), manifestRootDirView.Native());
+        }
+// @CYA END
 
         // Visit children external subdirectories
         using Type = AZ::SettingsRegistryInterface::Type;
