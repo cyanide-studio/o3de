@@ -231,12 +231,14 @@ namespace EMotionFX
         void ActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_configuration.m_actorAsset = actorAsset;
-
-            Actor* actor = m_configuration.m_actorAsset->GetActor();
+// @CYA EDIT: allow actor asset absence
+            /*Actor* actor = m_configuration.m_actorAsset->GetActor();
             if (actor)
             {
                 CheckActorCreation();
-            }
+            }*/
+            CheckActorCreation();
+// @CYA END
         }
 
         //////////////////////////////////////////////////////////////////////////

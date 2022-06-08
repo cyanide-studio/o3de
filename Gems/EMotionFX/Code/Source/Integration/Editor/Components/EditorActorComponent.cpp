@@ -542,12 +542,14 @@ namespace EMotionFX
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_actorAsset = actorAsset;
-
-            Actor* actor = m_actorAsset->GetActor();
+// @CYA EDIT: allow actor asset absence
+            /*Actor* actor = m_actorAsset->GetActor();
             if (actor)
             {
                 CheckActorCreation();
-            }
+            }*/
+            CheckActorCreation();
+// @CYA END
         }
 
         void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
@@ -889,6 +891,7 @@ namespace EMotionFX
             {
                 ActorComponentNotificationBus::Event(
                     GetEntityId(), &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed, m_actorInstance.get());
+                m_renderActorInstance.reset(nullptr);
                 m_actorInstance.reset();
             }
 // @CYA END
