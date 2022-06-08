@@ -56,6 +56,16 @@ namespace AzFramework
             {
                 gemInfo.m_absoluteSourcePaths.emplace_back(gemRootPath);
             }
+
+// @CYA EDIT: Add gem order
+            const auto gemOrderKey = FixedValueString::format("%s/%.*s/Order", 
+                AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+            if (AZ::s64 gemOrder; settingsRegistry.Get(gemOrder, gemOrderKey))
+            {
+                gemInfo.m_gemOrder = aznumeric_cast<int>(gemOrder);
+            }
+// @CYA END
+
         };
 
         AZ::SettingsRegistryVisitorUtils::VisitObject(settingsRegistry, GemSettingsVisitor,

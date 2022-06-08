@@ -93,6 +93,10 @@ namespace AZ::SettingsRegistryMergeUtils
     inline constexpr AZStd::string_view ProjectNameKey = "/project_name";
     inline constexpr AZStd::string_view O3DEManifestNameKey = "/o3de_manifest_name";
 
+// @CYA EDIT: Add /gem_order key
+    inline constexpr AZStd::string_view GemOrderKey = "/gem_order";
+// @CYA END
+
     //! Json pointer path to the "external_subdirectories" entry field with a manifest.json
     inline constexpr AZStd::string_view ExternalSubdirectoriesKey = "/external_subdirectories";
 

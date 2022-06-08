@@ -463,7 +463,20 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->SetVisible(visible);
-                SetRayTracingEnabled(meshHandle, visible);
+
+                // @CYA EDIT: report of O3DE not yet available fix. Do not enable raytracing on SetVisible(true) if m_isRayTracingEnabled is false
+                if (m_rayTracingFeatureProcessor && meshHandle->m_descriptor.m_isRayTracingEnabled)
+                {
+                    // always remove from ray tracing first
+                    m_rayTracingFeatureProcessor->RemoveMesh(meshHandle->m_objectId);
+
+                    // now add if it's visible
+                    if (visible)
+                    {
+                        meshHandle->SetRayTracingData();
+                    }
+                }
+                // @CYA END
             }
         }
 
