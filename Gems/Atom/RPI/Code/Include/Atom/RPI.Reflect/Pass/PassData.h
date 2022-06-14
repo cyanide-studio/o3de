@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
