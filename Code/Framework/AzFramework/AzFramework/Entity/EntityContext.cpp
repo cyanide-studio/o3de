@@ -244,7 +244,6 @@ namespace AzFramework
     {
         // Verify that this context has the right to perform operations on the entity
         bool validEntity = IsOwnedByThisContext(entityId);
-        AZ_Warning("GameEntityContext", validEntity, "Entity with id %llu does not belong to the game context.", entityId);
 
         if (validEntity)
         {
@@ -266,6 +265,14 @@ namespace AzFramework
                 }
             }
         }
+// @CYA EDIT: dumping name of entity when Activate fail
+        else
+        {
+            AZStd::string entityName = "INVALID_NAME";
+            AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, entityId);
+            AZ_Warning("GameEntityContext", validEntity, "Entity %s with id %llu does not belong to the game context.", entityName.c_str(), entityId);
+        }
+// @CYA END
     }
 
     //=========================================================================
