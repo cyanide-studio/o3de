@@ -356,7 +356,6 @@ namespace AZ
             // Then in each Lod we need to group all faces by material id.
             // All sub meshes with the same material id get merged
             AZStd::vector<Data::Asset<ModelLodAsset>> lodAssets;
-            lodAssets.resize(sourceMeshContentListsByLod.size());
 
             // Joint name to joint index map used for the skinning influences.
             AZStd::unordered_map<AZStd::string, uint16_t> jointNameToIndexMap;
@@ -373,6 +372,12 @@ namespace AZ
             uint32_t lodIndex = 0;
             for (const SourceMeshContentList& sourceMeshContentList : sourceMeshContentListsByLod)
             {
+// @CYA EDIT: fix fbx processing fail when empty source mesh
+                if (sourceMeshContentList.empty())
+                    continue;
+
+                lodAssets.push_back();
+// @CYA END
                 ModelLodAssetCreator lodAssetCreator;
                 m_lodName = AZStd::string::format("lod%d", lodIndex);
                 AZStd::string lodAssetName = GetAssetFullName(ModelLodAsset::TYPEINFO_Uuid());
