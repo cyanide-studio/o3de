@@ -265,9 +265,7 @@ namespace ImageProcessingAtom
                 height *= 6;
             }
 
-// @CYA EDIT: fix loading of array images
             height *= arraySize;
-// @CYA END
 
             IImageObjectPtr outputImage = IImageObjectPtr(IImageObject::CreateImage(width, height, mipLevels, format));
 

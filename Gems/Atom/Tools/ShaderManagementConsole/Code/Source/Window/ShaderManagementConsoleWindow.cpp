@@ -20,12 +20,36 @@
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, parent)
+        : Base(toolId, "ShaderManagementConsoleWindow",  parent)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
 
+        m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
+        m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/ShaderManagementConsole/DocumentInspector");
+        AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
+        SetDockWidgetVisible("Inspector", false);
+
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
+
+    void ShaderManagementConsoleWindow::OnDocumentOpened(const AZ::Uuid& documentId)
+    {
+        Base::OnDocumentOpened(documentId);
+        m_documentInspector->SetDocumentId(documentId);
+    }
+
+    void ShaderManagementConsoleWindow::OnDocumentCleared(const AZ::Uuid& documentId)
+    {
+        Base::OnDocumentCleared(documentId);
+        m_documentInspector->SetDocumentId(documentId);
+    }
+
+    void ShaderManagementConsoleWindow::OnDocumentError(const AZ::Uuid& documentId)
+    {
+        Base::OnDocumentError(documentId);
+        m_documentInspector->SetDocumentId(documentId);
+    }
+
 } // namespace ShaderManagementConsole
 
 #include <Window/moc_ShaderManagementConsoleWindow.cpp>

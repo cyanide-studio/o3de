@@ -231,14 +231,7 @@ namespace EMotionFX
         void ActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_configuration.m_actorAsset = actorAsset;
-// @CYA EDIT: allow actor asset absence
-            /*Actor* actor = m_configuration.m_actorAsset->GetActor();
-            if (actor)
-            {
-                CheckActorCreation();
-            }*/
             CheckActorCreation();
-// @CYA END
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -280,9 +273,7 @@ namespace EMotionFX
             AZ::TickBus::Handler::BusConnect();
 
             const AZ::EntityId entityId = GetEntityId();
-// @CYA EDIT: fix ActorComponentRequestBus not listening when asset is invalid
             ActorComponentRequestBus::Handler::BusConnect(entityId);
-// @CYA END
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusConnect(entityId);
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusConnect(entityId);
@@ -315,11 +306,12 @@ namespace EMotionFX
         {
             if (targetEntityId.IsValid() && targetEntityId != GetEntityId())
             {
+                m_attachmentTargetEntityId = targetEntityId;
+
                 ActorComponentNotificationBus::Handler::BusDisconnect();
                 ActorComponentNotificationBus::Handler::BusConnect(targetEntityId);
 
                 AZ::TransformNotificationBus::MultiHandler::BusConnect(targetEntityId);
-                m_attachmentTargetEntityId = targetEntityId;
 
                 // There's no guarantee that we will receive a on transform change call for the target entity because of the entity activate order.
                 // Enforce a transform query on target to get the correct initial transform.
@@ -337,10 +329,16 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::DetachFromEntity()
         {
-            if (m_attachmentTargetActor)
+            if (!m_actorInstance)
             {
-                m_attachmentTargetActor->RemoveAttachment(m_actorInstance.get());
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
+                return;
+            }
+
+            ActorInstance* attachedTo = m_actorInstance->GetAttachedTo();
+            if (attachedTo)
+            {
+                attachedTo->RemoveAttachment(m_actorInstance.get());
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentPreviousParent);
                 AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
 
                 AZ::TransformNotificationBus::MultiHandler::BusDisconnect(m_attachmentTargetEntityId);
@@ -412,9 +410,7 @@ namespace EMotionFX
 
         void ActorComponent::CheckActorCreation()
         {
-// @CYA EDIT: move actor destruction before asset checking. Passing invalid id to SetActorAsset can now trigger current actor deletion.
             DestroyActor();
-// @CYA END
 
             // Create actor instance.
             auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
@@ -471,6 +467,9 @@ namespace EMotionFX
                 }
             }
 
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
             // Reattach all attachments
             for (AZ::EntityId& attachment : m_attachments)
             {
@@ -492,38 +491,53 @@ namespace EMotionFX
         void ActorComponent::CheckAttachToEntity()
         {
             // Attach to the target actor if we're both ready.
-            // Note that m_attachmentTargetActor will always be null if we're not configured to attach to anything.
-            if (m_actorInstance && m_attachmentTargetActor)
+            if (m_actorInstance)
             {
-                DetachFromEntity();
-
-                // Make sure we don't generate some circular loop by attaching to each other.
-                if (!m_attachmentTargetActor.get()->CheckIfCanHandleAttachment(m_actorInstance.get()))
+                if (m_attachmentTargetEntityId.IsValid())
                 {
-                    AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies!\n");
-                    return;
-                }
+                    // Create the attachment if the target instance is already created.
+                    // Otherwise, listen to the actor instance creation event.
+                    ActorInstance* targetActorInstance = nullptr;
+                    ActorComponentRequestBus::EventResult(targetActorInstance, m_attachmentTargetEntityId, &ActorComponentRequestBus::Events::GetActorInstance);
+                    if (targetActorInstance)
+                    {
+                        DetachFromEntity();
 
-                // Create the attachment.
-                AZ_Assert(m_configuration.m_attachmentType == AttachmentType::SkinAttachment, "Expected a skin attachment.");
-                Attachment* attachment = AttachmentSkin::Create(m_attachmentTargetActor.get(), m_actorInstance.get());
-                m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
-                m_attachmentTargetActor->AddAttachment(attachment);
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentTargetActor->GetEntityId());
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
+                        // Make sure we don't generate some circular loop by attaching to each other.
+                        if (!targetActorInstance->CheckIfCanHandleAttachment(m_actorInstance.get()))
+                        {
+                            AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies!\n");
+                            return;
+                        }
+
+                        // Remember the parent entity before we re-parent (attach) it.
+                        AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
+                        // Create the attachment.
+                        AZ_Assert(m_configuration.m_attachmentType == AttachmentType::SkinAttachment, "Expected a skin attachment.");
+                        Attachment* attachment = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());
+                        m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
+                        targetActorInstance->AddAttachment(attachment);
+                        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, targetActorInstance->GetEntityId());
+                        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
+                    }
+                }
+                else
+                {
+                    DetachFromEntity();
+                }
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::DestroyActor()
         {
+            DetachFromEntity();
+
             m_renderActorInstance.reset();
 
             if (m_actorInstance)
             {
-                DetachFromEntity();
-
-                m_attachmentTargetActor = nullptr;
 
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
@@ -610,8 +624,6 @@ namespace EMotionFX
             }
             else
             {
-                m_attachmentTargetActor.reset(actorInstance);
-
                 CheckAttachToEntity();
             }
         }
@@ -619,8 +631,6 @@ namespace EMotionFX
         void ActorComponent::OnActorInstanceDestroyed([[maybe_unused]] ActorInstance* actorInstance)
         {
             DetachFromEntity();
-
-            m_attachmentTargetActor = nullptr;
         }
 
         //////////////////////////////////////////////////////////////////////////

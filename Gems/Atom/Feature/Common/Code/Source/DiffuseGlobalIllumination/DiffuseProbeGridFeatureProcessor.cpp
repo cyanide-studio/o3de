@@ -792,14 +792,10 @@ namespace AZ
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_visualizationBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
-// @CYA EDIT: fix crash with vulkan RHI
             if (device->GetFeatures().m_rayTracing)
             {
-// @CYA END
-            m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
-// @CYA EDIT: fix crash with vulkan RHI
+                m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
             }
-// @CYA END
         }
 
         void DiffuseProbeGridFeatureProcessor::HandleAssetNotification(Data::Asset<Data::AssetData> asset, DiffuseProbeGridTextureNotificationType notificationType)

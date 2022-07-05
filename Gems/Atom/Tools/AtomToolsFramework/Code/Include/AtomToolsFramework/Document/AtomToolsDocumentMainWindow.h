@@ -32,7 +32,7 @@ namespace AtomToolsFramework
 
         using Base = AtomToolsMainWindow;
 
-        AtomToolsDocumentMainWindow(const AZ::Crc32& toolId, QWidget* parent = 0);
+        AtomToolsDocumentMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent = 0);
         ~AtomToolsDocumentMainWindow();
 
         //! Helper function to get the absolute path for a document represented by the document ID
@@ -40,6 +40,9 @@ namespace AtomToolsFramework
 
         //! Retrieves the document ID from a tab with the index
         AZ::Uuid GetDocumentTabId(const int tabIndex) const;
+
+        //! Retrieves the document ID from the currently selected tab
+        AZ::Uuid GetCurrentDocumentId() const;
 
         //! Searches for the tab index corresponding to the document ID, returning -1 if not found
         int GetDocumentTabIndex(const AZ::Uuid& documentId) const;
@@ -77,13 +80,21 @@ namespace AtomToolsFramework
         //! Prompts the user for a selection of documents to open
         virtual AZStd::vector<AZStd::string> GetOpenDocumentParams();
 
+        // AtomToolsMainWindowRequestBus::Handler overrides...
+        void CreateMenus(QMenuBar* menuBar) override;
+        void UpdateMenus(QMenuBar* menuBar) override;
+
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+
     protected:
-        void AddDocumentMenus();
         void AddDocumentTabBar();
+        void UpdateRecentFileMenu();
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
+        void OnDocumentCleared(const AZ::Uuid& documentId) override;
+        void OnDocumentError(const AZ::Uuid& documentId) override;
         void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
         void OnDocumentModified(const AZ::Uuid& documentId) override;
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
@@ -92,7 +103,10 @@ namespace AtomToolsFramework
         void closeEvent(QCloseEvent* closeEvent) override;
 
         template<typename Functor>
-        QAction* CreateAction(const QString& text, Functor functor, const QKeySequence& shortcut = 0);
+        QAction* CreateActionAtPosition(
+            QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut = 0);
+
+        QMenu* m_menuOpenRecent = {};
 
         QAction* m_actionNew = {};
         QAction* m_actionOpen = {};

@@ -537,9 +537,7 @@ namespace AZ::SceneGenerationComponents
             // the views provided by SceneAPI do not have a size() method, so compute it
             const size_t layerCount = AZStd::distance(dataView.begin(), dataView.end());
             AZStd::vector<ResultingLayerType*> layers(layerCount);
-// @CYA EDIT: Fix compilation with VS 17.2 (regression)
-            AZStd::generate(layers.begin(), layers.end(), [&]
-// @CYA END
+            AZStd::generate(layers.begin(), layers.end(), [&meshBuilder = meshBuilder, vertexCount = vertexCount]
             {
                 return meshBuilder.AddLayer<ResultingLayerType>(vertexCount);
             });

@@ -199,16 +199,10 @@ namespace EditorInternal
         
         auto previousDocument = GetIEditor()->GetDocument();
         QString previousPathName = (previousDocument != nullptr) ? previousDocument->GetLevelPathName() : "";
-// @CYA EDIT:   Change the COpenSameLevelOptions (also add addToMostRecentFileList, because needed) - We are in file list of File ->
-// Open Recent Level
-//              Why? Because we want to be able to reopen a level.
         auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.c_str(), true, COpenSameLevelOptions::ReopenLevelIfSame);
-// @CYA END
-        
+
         // the underlying document pointer doesn't change, so we can't check that; use the path name's instead
-// @CYA EDIT:   Remove "(newDocument->GetLevelPathName() != previousPathName)" check to allow to reload our support level in editor
-        return newDocument && !newDocument->IsLevelLoadFailed() ;
-// @CYA END
+        return newDocument && !newDocument->IsLevelLoadFailed();
     }
 
     bool EditorToolsApplication::OpenLevelNoPrompt(AZStd::string_view levelName)

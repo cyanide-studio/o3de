@@ -41,10 +41,8 @@ namespace ShaderManagementConsole
                 ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole")
                 ->Event("SetShaderVariantListSourceData", &ShaderManagementConsoleDocumentRequestBus::Events::SetShaderVariantListSourceData)
                 ->Event("GetShaderVariantListSourceData", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData)
-                ->Event("GetShaderOptionCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionCount)
+                ->Event("GetShaderOptionDescriptorCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount)
                 ->Event("GetShaderOptionDescriptor", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptor)
-                ->Event("GetShaderVariantCount", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantCount)
-                ->Event("GetShaderVariantInfo", &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantInfo)
                 ;
         }
     }
@@ -72,7 +70,10 @@ namespace ShaderManagementConsole
         AZ_Error("ShaderManagementConsoleDocument", m_shaderAsset.IsReady(), "Could not load shader asset: %s.", shaderPath.c_str());
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        m_modified = true;
     }
 
     const AZ::RPI::ShaderVariantListSourceData& ShaderManagementConsoleDocument::GetShaderVariantListSourceData() const
@@ -80,17 +81,7 @@ namespace ShaderManagementConsole
         return m_shaderVariantListSourceData;
     }
 
-    size_t ShaderManagementConsoleDocument::GetShaderVariantCount() const
-    {
-        return m_shaderVariantListSourceData.m_shaderVariants.size();
-    }
-
-    const AZ::RPI::ShaderVariantListSourceData::VariantInfo& ShaderManagementConsoleDocument::GetShaderVariantInfo(size_t index) const
-    {
-        return m_shaderVariantListSourceData.m_shaderVariants[index];
-    }
-
-    size_t ShaderManagementConsoleDocument::GetShaderOptionCount() const
+    size_t ShaderManagementConsoleDocument::GetShaderOptionDescriptorCount() const
     {
         if (IsOpen())
         {
@@ -215,7 +206,51 @@ namespace ShaderManagementConsole
 
     bool ShaderManagementConsoleDocument::IsModified() const
     {
-        return false;
+        return m_modified;
+    }
+
+    bool ShaderManagementConsoleDocument::BeginEdit()
+    {
+        // Save the current properties as a momento for undo before any changes are applied
+        m_shaderVariantListSourceDataBeforeEdit = m_shaderVariantListSourceData;
+        return true;
+    }
+
+    bool ShaderManagementConsoleDocument::EndEdit()
+    {
+        bool modified = false;
+
+        // Lazy evaluation, comparing the current and previous shader variant list source data state to determine if we need to record undo/redo history.
+        // TODO Refine this so that only the deltas are stored.
+        const auto& undoState = m_shaderVariantListSourceDataBeforeEdit;
+        const auto& redoState = m_shaderVariantListSourceData;
+        if (undoState.m_shaderFilePath != redoState.m_shaderFilePath ||
+            undoState.m_shaderVariants.size() != redoState.m_shaderVariants.size())
+        {
+            modified = true;
+        }
+        else
+        {
+            for (size_t i = 0; i < redoState.m_shaderVariants.size(); ++i)
+            {
+                if (undoState.m_shaderVariants[i].m_stableId != redoState.m_shaderVariants[i].m_stableId ||
+                    undoState.m_shaderVariants[i].m_options != redoState.m_shaderVariants[i].m_options)
+                {
+                    modified = true;
+                    break;
+                }
+            }
+        }
+
+        if (modified)
+        {
+            AddUndoRedoHistory(
+                [this, undoState]() { SetShaderVariantListSourceData(undoState); },
+                [this, redoState]() { SetShaderVariantListSourceData(redoState); });
+        }
+
+        m_shaderVariantListSourceDataBeforeEdit = {};
+        return true;
     }
 
     void ShaderManagementConsoleDocument::Clear()
@@ -223,7 +258,9 @@ namespace ShaderManagementConsole
         AtomToolsFramework::AtomToolsDocument::Clear();
 
         m_shaderVariantListSourceData = {};
+        m_shaderVariantListSourceDataBeforeEdit = {};
         m_shaderAsset = {};
+        m_modified = {};
     }
 
     bool ShaderManagementConsoleDocument::SaveSourceData()
@@ -235,6 +272,7 @@ namespace ShaderManagementConsole
         }
 
         m_absolutePath = m_savePathNormalized;
+        m_modified = {};
         return SaveSucceeded();
     }
 
@@ -314,12 +352,14 @@ namespace ShaderManagementConsole
         AzFramework::StringFunc::Path::ReplaceExtension(m_absolutePath, AZ::RPI::ShaderVariantListSourceData::Extension);
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
+        m_modified = {};
+
         return IsOpen() ? OpenSucceeded() : OpenFailed();
     }
 
     bool ShaderManagementConsoleDocument::LoadShaderVariantListSourceData()
     {
-        // Load previously generated shader variant list source data 
+        // Load previously generated shader variant list source data
         AZ::RPI::ShaderVariantListSourceData shaderVariantListSourceData;
         if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, shaderVariantListSourceData))
         {
@@ -328,6 +368,8 @@ namespace ShaderManagementConsole
         }
 
         SetShaderVariantListSourceData(shaderVariantListSourceData);
+        m_modified = {};
+
         return IsOpen() ? OpenSucceeded() : OpenFailed();
     }
 
@@ -337,7 +379,7 @@ namespace ShaderManagementConsole
         assetDatabaseConnection.OpenDatabase();
 
         // Find all material types that reference shaderFilePath
-        AZStd::vector<AZStd::string> materialTypeSources;
+        AZStd::list<AZStd::string> materialTypeSources;
 
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
             shaderFilePath.c_str(), nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
@@ -351,32 +393,34 @@ namespace ShaderManagementConsole
                 return true;
             });
 
-        // Find all materials that reference any of the material types using this shader 
-        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productDependencies;
+        // Find all materials that reference any of the material types using this shader
+        AZStd::string watchFolder;
+        AZ::Data::AssetInfo materialTypeSourceAssetInfo;
+        AZStd::list<AzToolsFramework::AssetDatabase::ProductDatabaseEntry> productDependencies;
         for (const auto& materialTypeSource : materialTypeSources)
         {
             bool result = false;
-            AZ::Data::AssetInfo materialTypeSourceAssetInfo;
-            AZStd::string watchFolder;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
                 result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, materialTypeSource.c_str(),
                 materialTypeSourceAssetInfo, watchFolder);
-
-            assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
-                materialTypeSourceAssetInfo.m_assetId.m_guid, materialTypeSourceAssetInfo.m_assetId.m_subId,
-                [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
-                {
-                    if (AzFramework::StringFunc::Path::IsExtension(entry.m_productName.c_str(), AZ::RPI::MaterialAsset::Extension))
+            if (result)
+            {
+                assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
+                    materialTypeSourceAssetInfo.m_assetId.m_guid, materialTypeSourceAssetInfo.m_assetId.m_subId,
+                    [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
                     {
-                        productDependencies.push_back(entry);
-                    }
-                    return true;
-                });
+                        if (AzFramework::StringFunc::Path::IsExtension(entry.m_productName.c_str(), AZ::RPI::MaterialAsset::Extension))
+                        {
+                            productDependencies.push_back(entry);
+                        }
+                        return true;
+                    });
+            }
         }
 
         AZStd::vector<AZ::Data::AssetId> results;
         results.reserve(productDependencies.size());
-        for (auto product : productDependencies)
+        for (const auto& product : productDependencies)
         {
             assetDatabaseConnection.QueryCombinedByProductID(
                 product.m_productID,

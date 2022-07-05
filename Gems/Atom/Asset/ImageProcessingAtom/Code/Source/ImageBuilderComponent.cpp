@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 27;   // [ATOM-16958]
+        builderDescriptor.m_version = 29;   // [GHI-8903]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -196,7 +196,6 @@ namespace ImageProcessingAtom
         return outProducts;
     }
 
-// @CYA EDIT: Add a way to convert images in memory
     IImageObjectPtr BuilderPluginComponent::ConvertImageObjectInMemory(
         IImageObjectPtr imageObject,
         const AZStd::string& presetName,
@@ -232,11 +231,14 @@ namespace ImageProcessingAtom
         process.ProcessAll();
         bool result = process.IsSucceed();
         if (result)
+        {
             return process.GetOutputImage();
+        }
         else
+        {
             return nullptr;
+        }
     }
-// @CYA END
 
     bool BuilderPluginComponent::DoesSupportPlatform(const AZStd::string& platformId)
     {
@@ -257,7 +259,6 @@ namespace ImageProcessingAtom
         return info->bSquarePow2;
     }
 
-// @CYA EDIT: Expose preset handling functions
     FileMask BuilderPluginComponent::GetFileMask(AZStd::string_view imageFilePath)
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->GetFileMask(imageFilePath);
@@ -287,7 +288,6 @@ namespace ImageProcessingAtom
     {
         return ImageProcessingAtom::BuilderSettingManager::Instance()->IsValidPreset(presetName);
     }
-// @CYA END
 
     void ImageBuilderWorker::ShutDown()
     {

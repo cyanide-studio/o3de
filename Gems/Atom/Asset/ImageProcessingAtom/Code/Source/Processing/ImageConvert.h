@@ -51,6 +51,9 @@ namespace ImageProcessingAtom
     //Converts the image to a RGBA8 format that can be displayed in a preview UI.
     IImageObjectPtr ConvertImageForPreview(IImageObjectPtr image);
 
+    //Convert a (potentially compressed, potentially sRGB) image to linear RGBA32.
+    IImageObjectPtr GetUncompressedLinearImage(IImageObjectPtr image);
+
     //get output image size and mip count based on the texture setting and preset setting
 
     //other helper functions
@@ -85,9 +88,8 @@ namespace ImageProcessingAtom
         // List of output products for the job, appended to by the ImageConvertProcess
         AZStd::vector<AssetBuilderSDK::JobProduct>* m_jobProducts = nullptr;
 
-// @CYA EDIT: Allow to process images in memory
+        // Should the step to save resulting file to disk be skipped. Disabling this can be useful for in-memory image processing.
         bool m_shouldSaveFile = true;
-// @CYA END
     };
 
     /**
@@ -159,6 +161,9 @@ namespace ImageProcessingAtom
 
         //mipmap generation for cubemap
         bool FillCubemapMipmaps();
+
+        //set (alpha-weighted) average color computed from given mip
+        bool SetAverageColor(AZ::u32 mip);
 
         //IBL cubemap generation, this creates a separate ImageConvertProcess
         bool CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);

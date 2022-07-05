@@ -74,7 +74,7 @@ namespace AZ
             }
             else if (m_scriptAsset.IsReady())
             {
-                return m_scriptAsset->GetScriptBuffer();
+                return m_scriptAsset->m_data.GetScriptBuffer();
             }
             else
             {
@@ -665,9 +665,7 @@ namespace AZ
 
         LuaMaterialFunctorRenderStates LuaMaterialFunctorShaderItem::GetRenderStatesOverride()
         {
-// @CYA EDIT: we had the case where m_context was null and crashed the engine so we added a check
             if (m_context && m_context->CheckPsoChangesAllowed() && m_shaderItem)
-// @CYA END
             {
                 return LuaMaterialFunctorRenderStates{m_shaderItem->GetRenderStatesOverlay()};
             }
