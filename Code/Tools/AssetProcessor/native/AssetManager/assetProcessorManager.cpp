@@ -3163,6 +3163,11 @@ namespace AssetProcessor
     // the scanner should be omitting directory changes.
     void AssetProcessorManager::AssessFilesFromScanner(QSet<AssetFileInfo> filePaths)
     {
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Received %i files from the scanner.  Assessing...\n", static_cast<int>(filePaths.size()));
+        AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
+        WarmUpFileCache(filePaths);
+        AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
+
 // @CYA EDIT: Add setting to disable startup scan
         if (m_initialScanSkippingFeature)
         {
@@ -3174,15 +3179,16 @@ namespace AssetProcessor
             m_fileHashes.clear();
 
             m_initialScanSkippingFeature = false;
+
+            // There's a weird check preventing m_assetProcessorManagerIsReady to pass to true if number of job doesn't change at all, updating it to 1 before IdleCheck puts it to 0 to bypass
+            // plz send help
+            Q_EMIT NumRemainingJobsChanged(1);
+
+            QueueIdleCheck();
             return;
         }
 // @CYA END
 
-        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Received %i files from the scanner.  Assessing...\n", static_cast<int>(filePaths.size()));
-        AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
-        WarmUpFileCache(filePaths);
-        AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
-        
         int processedFileCount = 0;
         
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
