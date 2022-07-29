@@ -265,12 +265,12 @@ namespace AzFramework
                 }
             }
         }
-// @CYA EDIT: dumping name of entity when Activate fail
+// @CYA EDIT: dumping name of entity when not owned by context
         else
         {
             AZStd::string entityName = "INVALID_NAME";
             AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, entityId);
-            AZ_Warning("GameEntityContext", validEntity, "Entity %s with id %llu does not belong to the game context.", entityName.c_str(), entityId);
+            AZ_Warning("GameEntityContext", false, "Entity %s with id %llu does not belong to the game context.", entityName.c_str(), entityId);
         }
 // @CYA END
     }
@@ -282,8 +282,7 @@ namespace AzFramework
     {
         // Verify that this context has the right to perform operations on the entity
         bool validEntity = IsOwnedByThisContext(entityId);
-        AZ_Warning("GameEntityContext", validEntity, "Entity with id %llu does not belong to the game context.", entityId);
-
+       
         if (validEntity)
         {
             // Then look up the entity and deactivate it.
@@ -309,6 +308,14 @@ namespace AzFramework
                 }
             }
         }
+// @CYA EDIT: dumping name of entity when not owned by context
+        else
+        {
+            AZStd::string entityName = "INVALID_NAME";
+            AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, entityId);
+            AZ_Warning("GameEntityContext", validEntity, "Entity %s with id %llu does not belong to the game context.", entityName.c_str(), entityId);
+        }
+// @CYA END
     }
 
     //=========================================================================
@@ -320,12 +327,17 @@ namespace AzFramework
 
         EntityContextId owningContextId = EntityContextId::CreateNull();
         EntityIdContextQueryBus::EventResult(owningContextId, entity->GetId(), &EntityIdContextQueryBus::Events::GetOwningContextId);
-        AZ_Assert(owningContextId == m_contextId, "Entity does not belong to this context, and therefore can not be safely destroyed by this context.");
-
+        
         if (owningContextId == m_contextId)
         {
             return m_entityOwnershipService->DestroyEntity(entity);
         }
+// @CYA EDIT: dumping name of entity when not owned by context
+        else
+        {
+            AZ_Assert(false, "Entity %s does not belong to this context, and therefore can not be safely destroyed by this context.", entity->GetName().c_str());
+        }
+// @CYA END
 
         return false;
     }
