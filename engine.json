@@ -64,7 +64,6 @@
         "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
-        "Gems/RecastNavigation",
         "Gems/RemoteTools",
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
