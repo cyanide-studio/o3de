@@ -62,14 +62,14 @@ private:
 
     //! Handler for shader debug information lookup callbacks.
     //! This is used by the JSON decoder for mapping shader instruction
-    //! addresses to DXIL lines or HLSl source lines.
+    //! addresses to SPIR-V lines or HLSl source lines.
     void OnShaderDebugInfoLookup(
         const GFSDK_Aftermath_ShaderDebugInfoIdentifier& identifier,
         PFN_GFSDK_Aftermath_SetData setShaderDebugInfo) const;
 
     //! Handler for shader lookup callbacks.
     //! This is used by the JSON decoder for mapping shader instruction
-    //! addresses to DXIL lines or HLSL source lines.
+    //! addresses to SPIR-V lines or HLSL source lines.
     //! NOTE: If the application loads stripped shader binaries (-Qstrip_debug),
     //! Aftermath will require access to both the stripped and the not stripped
     //! shader binaries.
@@ -151,7 +151,6 @@ private:
     // cache executable folder and project name
     AZStd::string m_executableFolder;
     AZStd::string m_projectName;
-
 };
 
 #endif

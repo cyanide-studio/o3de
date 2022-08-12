@@ -9,7 +9,6 @@
 set(PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED TRUE)
 set(VULKAN_VALIDATION_LAYER 3rdParty::vulkan-validationlayers)
 
-# @CYA EDIT: Upgrade Aftermath support (and add it to Vulkan RHI)
 set(LY_AFTERMATH_PATH "" CACHE PATH "Path to Aftermath.")
 if (NOT "${LY_AFTERMATH_PATH}" STREQUAL "")
     set(ATOM_AFTERMATH_PATH_CMAKE_FORMATTED "${LY_AFTERMATH_PATH}")
@@ -30,4 +29,3 @@ mark_as_advanced(CLEAR, aftermath_header)
 if(aftermath_header)
     set(PAL_TRAIT_AFTERMATH_AVAILABLE TRUE)
 endif()
-# @CYA END

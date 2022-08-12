@@ -376,7 +376,7 @@ namespace AZ
                 if (sourceMeshContentList.empty())
                     continue;
 
-                lodAssets.push_back();
+                lodAssets.push_back({});
 // @CYA END
                 ModelLodAssetCreator lodAssetCreator;
                 m_lodName = AZStd::string::format("lod%d", lodIndex);

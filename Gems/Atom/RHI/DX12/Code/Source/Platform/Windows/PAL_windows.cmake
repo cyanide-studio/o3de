@@ -20,20 +20,16 @@ endif()
 
 unset(pix3_header CACHE)
 
-# @CYA EDIT: Add a way to set Aftermath without using env variable
 set(LY_AFTERMATH_PATH "" CACHE PATH "Path to Aftermath.")
 if (NOT "${LY_AFTERMATH_PATH}" STREQUAL "")
     set(ATOM_AFTERMATH_PATH_CMAKE_FORMATTED "${LY_AFTERMATH_PATH}")
 endif()
-# @CYA END
 
 set(PAL_TRAIT_AFTERMATH_AVAILABLE FALSE)
 unset(aftermath_header CACHE)
-# @CYA EDIT: Add a way to set Aftermath without using env variable
 if (NOT ATOM_AFTERMATH_PATH_CMAKE_FORMATTED)
     file(TO_CMAKE_PATH "$ENV{ATOM_AFTERMATH_PATH}" ATOM_AFTERMATH_PATH_CMAKE_FORMATTED)
 endif()
-# @CYA END
 
 find_file(aftermath_header
     GFSDK_Aftermath.h

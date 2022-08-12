@@ -20,6 +20,7 @@ function(add_engine_gem_json_external_subdirectories gem_path)
         # Read the gem_name from the gem.json and map it to the gem path
         o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
         if (gem_name)
+            message(VERBOSE "Register ${gem_name} with path ${gem_path}")
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
 
@@ -64,6 +65,7 @@ function(add_project_gem_json_external_subdirectories gem_path project_name)
         # Read the gem_name from the gem.json and map it to the gem path
         o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
         if (gem_name)
+            message(VERBOSE "Register ${gem_name} with path ${gem_path}")
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
 
@@ -107,6 +109,7 @@ function(add_o3de_manifest_gem_json_external_subdirectories gem_path)
         # Read the gem_name from the gem.json and map it to the gem path
         o3de_read_json_key(gem_name "${gem_path}/gem.json" "gem_name")
         if (gem_name)
+            message(VERBOSE "Register ${gem_name} with path ${gem_path}")
             set_property(GLOBAL PROPERTY "@GEMROOT:${gem_name}@" "${gem_path}")
         endif()
 
