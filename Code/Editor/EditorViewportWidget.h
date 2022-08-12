@@ -124,10 +124,6 @@ public:
     void SetFOV(float fov) override;
     float GetFOV() const override;
 
-// @CYA EDIT: add cvar to set editor camera near far
-// Callback for cvar modification
-    void OnDefaultCameraNearFarChange();
-// @CYA END
     // AzFramework::ViewportBorderRequestBus overrides ...
     AZStd::optional<AzFramework::ViewportBorderPadding> GetViewportBorderPadding() const override;
 
@@ -214,6 +210,9 @@ private:
     // IEditorEventListener overrides ...
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
+    // Callback for setting modification
+    void OnDefaultCameraNearFarChanged();
+
     // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
     // note: handler moved to cpp to resolve link issues in unity builds
     void OnStartPlayInEditor();
@@ -249,9 +248,7 @@ private:
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
-// @CYA EDIT: add cvar to set editor camera near far
     void SetDefaultCameraNearFar();
-// @CYA END
     void RenderSnapMarker();
     void RenderAll();
 
@@ -407,6 +404,7 @@ private:
     // Handlers for snapping/editor event callbacks
     SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
+    SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearFarPlaneDistanceHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times

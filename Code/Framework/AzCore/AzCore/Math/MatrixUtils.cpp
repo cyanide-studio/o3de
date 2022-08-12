@@ -60,12 +60,10 @@ namespace AZ
         return 2.0f * AZStd::atan(1.0f / m.GetElement(1, 1));
     }
 
-// @CYA EDIT: Set matrix element depending of near / far parameter
-// context : add cvar to set editor camera near far
     void SetPerspectiveMatrixNearFar(Matrix4x4& out, float nearDist, float farDist, bool reverseDepth)
     {
-        AZ_Assert(nearDist > FloatEpsilon, "near distance should be greater than 0.f");
-        AZ_Assert(farDist > nearDist, "far should be greater than near");
+        AZ_Assert(nearDist > FloatEpsilon, "Near distance should be greater than zero (float epsilon) in a perspective matrix");
+        AZ_Assert(farDist > nearDist, "Far should be greater than near in a perspective matrix");
 
         if (reverseDepth)
         {
@@ -75,7 +73,6 @@ namespace AZ
         out.SetElement(2, 2, farDist / (nearDist - farDist));
         out.SetElement(2, 3, nearDist * farDist / (nearDist - farDist));
     }
-// @CYA END
 
     Matrix4x4* MakeFrustumMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth)
     {

@@ -102,24 +102,6 @@
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 
-// @CYA EDIT: add cvar to set editor camera near far
-namespace
-{
-    void CVar_OnDefaultNearFarChange([[maybe_unused]]const float& value)
-    {
-        EditorViewportWidget* primaryViewport = EditorViewportWidget::GetPrimaryViewport();
-        if ((primaryViewport != nullptr))
-        {
-            primaryViewport->OnDefaultCameraNearFarChange();
-        }
-    }
-} // namespace
-
-AZ_CVAR(float, ed_editor_camera_near, 0.1f, CVar_OnDefaultNearFarChange, AZ::ConsoleFunctorFlags::Null, "Set editor camera near");
-
-AZ_CVAR(float, ed_editor_camera_far, 100.f, CVar_OnDefaultNearFarChange, AZ::ConsoleFunctorFlags::Null, "Set editor camera far");
-// @CYA END
-
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
@@ -964,6 +946,15 @@ void EditorViewportWidget::SetViewportId(int id)
         }
     );
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
+
+    m_nearFarPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
+        [this](float /*nearFarPlaneDistance*/)
+        {
+            OnDefaultCameraNearFarChanged();
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetFarPlaneDistanceChangedEvent(m_nearFarPlaneDistanceHandler);
+    m_editorViewportSettingsCallbacks->SetNearPlaneDistanceChangedEvent(m_nearFarPlaneDistanceHandler);
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()
@@ -1945,14 +1936,12 @@ void EditorViewportWidget::SetDefaultCamera()
         SetFOV(fov);
     }
 
-// @CYA EDIT: add cvar to set editor camera near far
-// Update camera matrix accord to near / far values
-// Limite update to the case where Editor Camera is the activa camera
+    // Update camera matrix according to near / far values
+    // Only update if the editor camera is the active view
     if (m_viewSourceType == ViewSourceType::None)
     {
         SetDefaultCameraNearFar();
     }
-// @CYA END
 
     // push the default view as the active view
     if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
@@ -1984,25 +1973,22 @@ void EditorViewportWidget::SetDefaultCamera()
     PostCameraSet();
 }
 
-
-// @CYA EDIT: add cvar to set editor camera near far
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCameraNearFar()
 {
-    auto m = m_defaultView->GetViewToClipMatrix();
-    AZ::SetPerspectiveMatrixNearFar(m, ed_editor_camera_near, ed_editor_camera_far, true);
-    m_defaultView->SetViewToClipMatrix(m);
+    auto viewToClip = m_defaultView->GetViewToClipMatrix();
+    AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
+    m_defaultView->SetViewToClipMatrix(viewToClip);
 }
 
 
-void EditorViewportWidget::OnDefaultCameraNearFarChange()
+void EditorViewportWidget::OnDefaultCameraNearFarChanged()
 {
     if (m_viewSourceType == ViewSourceType::None)
     {
         SetDefaultCameraNearFar();
     }
 }
-// @CYA END
+
 //////////////////////////////////////////////////////////////////////////
 AZ::RPI::ViewPtr EditorViewportWidget::GetCurrentAtomView() const
 {
