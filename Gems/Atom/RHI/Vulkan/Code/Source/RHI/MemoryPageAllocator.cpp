@@ -54,9 +54,13 @@ namespace AZ
 
         void MemoryPageFactory::ShutdownObject(Memory& memory, bool isPoolShutdown)
         {
+// @CYA EDIT: Replace Vulkan allocator by VMA
+/*
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
             heapMemoryUsage.m_residentInBytes -= memory.GetDescriptor().m_sizeInBytes;
             heapMemoryUsage.m_reservedInBytes -= memory.GetDescriptor().m_sizeInBytes;
+*/
+// @CYA END
 
             if (isPoolShutdown)
             {
