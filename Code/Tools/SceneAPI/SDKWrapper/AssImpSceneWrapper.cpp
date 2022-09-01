@@ -66,7 +66,9 @@ namespace AZ
 
             // aiProcess_LimitBoneWeights is not enabled because it will remove bones which are not associated with a mesh.
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
-            m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+// @CYA EDIT: Leave FBX pivots as removing them will break some of our animations
+            //m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+// @CYA END
             m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
             // The remove empty bones flag is on by default, but doesn't do anything internal to AssImp right now.
             // This is here as a bread crumb to save others times investigating issues with empty bones.
