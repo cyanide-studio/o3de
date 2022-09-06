@@ -79,7 +79,10 @@ namespace SceneBuilder
                 m_cachedFingerprint.append(element);
             }
             // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 4");
+// @CYA EDIT: Leave FBX pivots as removing them will break some of our animations
+// in case of conflict with O3DE, take their version, this change is temporary to force FBX recompilation
+            m_cachedFingerprint.append("Version 4 - @CYATemp");
+// @CYA END
         }
 
         return m_cachedFingerprint.c_str();
