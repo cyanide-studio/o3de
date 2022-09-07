@@ -342,8 +342,18 @@ namespace AZ::SceneGenerationComponents
 
             for (const IMeshGroup& meshGroup : meshGroups)
             {
+// @CYA EDIT: Fix crash when meshGroup is not part of selectedNodes
+                auto meshGroupIt = selectedNodes.find(&meshGroup);
+                if (meshGroupIt == selectedNodes.end())
+                {
+                    continue;
+                }
+
+                const auto& selectedMeshGroup = meshGroupIt->second;
+
                 // Skip meshes that are not used by this mesh group
-                if (AZStd::find(selectedNodes.at(&meshGroup).cbegin(), selectedNodes.at(&meshGroup).cend(), nodePath) == selectedNodes.at(&meshGroup).cend())
+                if (AZStd::find(selectedMeshGroup.cbegin(), selectedMeshGroup.cend(), nodePath) == selectedMeshGroup.cend())
+// @CYA END
                 {
                     continue;
                 }
