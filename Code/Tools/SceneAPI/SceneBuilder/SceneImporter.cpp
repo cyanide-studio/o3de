@@ -65,7 +65,9 @@ namespace AZ
             {
                 m_sceneWrapper->Clear();
 
-                if (!m_sceneWrapper->LoadSceneFromFile(context.GetInputDirectory().c_str()))
+// @CYA EDIT: Allow to preserve FBX pivots (pass manifest to LoadSceneFromFile)
+                if (!m_sceneWrapper->LoadSceneFromFile(context.GetInputDirectory().c_str(), context.GetScene().GetManifest()))
+// @CYA END
                 {
                     return Events::ProcessingResult::Failure;
                 }

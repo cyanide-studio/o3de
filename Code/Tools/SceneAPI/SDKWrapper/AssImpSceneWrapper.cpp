@@ -7,6 +7,9 @@
  */
 #include <AzCore/Debug/Trace.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
+// @CYA EDIT: Allow to preserve FBX pivots
+#include <SceneAPI/SceneCore/Containers/SceneManifest.h>
+// @CYA END
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SDKWrapper/AssImpSceneWrapper.h>
 #include <SceneAPI/SDKWrapper/AssImpNodeWrapper.h>
@@ -45,7 +48,9 @@ namespace AZ
         }
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName)
+// @CYA EDIT: Allow to preserve FBX pivots (pass manifest to LoadSceneFromFile)
+        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName, [[maybe_unused]] const SceneAPI::Containers::SceneManifest& manifest)
+// @CYA END
         {
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "AssImpSceneWrapper::LoadSceneFromFile %s", fileName);
             AZ_TraceContext("Filename", fileName);
@@ -66,8 +71,8 @@ namespace AZ
 
             // aiProcess_LimitBoneWeights is not enabled because it will remove bones which are not associated with a mesh.
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
-// @CYA EDIT: Leave FBX pivots as removing them will break some of our animations
-            //m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+// @CYA EDIT: Allow to preserve FBX pivots
+            m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, manifest.DoesPreserveFBXPivots());
 // @CYA END
             m_importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_OPTIMIZE_EMPTY_ANIMATION_CURVES, false);
             // The remove empty bones flag is on by default, but doesn't do anything internal to AssImp right now.
@@ -95,10 +100,12 @@ namespace AZ
             return true;
         }
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName)
+// @CYA EDIT: Allow to preserve FBX pivots (pass manifest to LoadSceneFromFile)
+        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName, const SceneAPI::Containers::SceneManifest& manifest)
         {
-            return LoadSceneFromFile(fileName.c_str());
+            return LoadSceneFromFile(fileName.c_str(), manifest);
         }
+// @CYA END
 
         const std::shared_ptr<SDKNode::NodeWrapper> AssImpSceneWrapper::GetRootNode() const
         {

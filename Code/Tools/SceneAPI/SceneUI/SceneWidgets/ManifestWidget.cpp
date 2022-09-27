@@ -12,6 +12,9 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
+// @CYA EDIT: Allow to preserve FBX pivots
+#include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
+// @CYA END
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidgetPage.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
@@ -62,6 +65,17 @@ namespace AZ
                 {
                     page->RefreshPage();
                 }
+
+// @CYA EDIT: Allow to preserve FBX pivots
+                ui->m_cyaPreserveFbxPivotsCheckbox->setChecked(manifest.DoesPreserveFBXPivots());
+                connect(ui->m_cyaPreserveFbxPivotsCheckbox, &QCheckBox::stateChanged, [&](int state)
+                {
+                    manifest.PreserveFBXPivots(state == Qt::CheckState::Checked);
+
+                    namespace SceneEvents = AZ::SceneAPI::Events;
+                    SceneEvents::ManifestMetaInfoBus::Broadcast(&SceneEvents::ManifestMetaInfoBus::Events::ObjectUpdated, *m_scene, nullptr, nullptr);
+                });
+// @CYA END
 
                 // Make sure to reset the active tab if the active tab is now empty
                 ManifestWidgetPage* currentPage = qobject_cast<ManifestWidgetPage*>(ui->m_tabs->currentWidget());

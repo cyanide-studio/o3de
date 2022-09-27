@@ -49,6 +49,9 @@ namespace AZ
             {
                 m_storageLookup.clear();
                 m_values.clear();
+// @CYA EDIT: Allow to preserve FBX pivots (add parameter to manifest)
+                m_cyaPreserveFbxPivots = false;
+// @CYA END
             }
 
             bool SceneManifest::AddEntry(AZStd::shared_ptr<DataTypes::IManifestObject>&& value)
@@ -186,7 +189,10 @@ namespace AZ
                 {
                     serializeContext->Class<SceneManifest>()
                         ->Version(1, &SceneManifest::VersionConverter)
-                        ->Field("values", &SceneManifest::m_values);
+                        ->Field("values", &SceneManifest::m_values)
+// @CYA EDIT: Allow to preserve FBX pivots (add parameter to manifest)
+                        ->Field("preserveFbxPivots", &SceneManifest::m_cyaPreserveFbxPivots);
+// @CYA END
                 }
 
                 BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);

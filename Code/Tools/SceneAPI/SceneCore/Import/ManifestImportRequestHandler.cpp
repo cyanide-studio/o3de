@@ -62,8 +62,10 @@ namespace AZ
                 result.append(s_generated);
             }
 
-            Events::LoadingResult ManifestImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, 
+// @CYA EDIT: Allow to preserve FBX pivots (split manifest loading from asset loading)
+         Events::LoadingResult ManifestImportRequestHandler::LoadAssetManifest(Containers::Scene& scene, const AZStd::string& path, 
                                                                           const Uuid& /*guid*/, RequestingApplication /*requester*/)
+// @CYA END
             {
                 AZStd::string manifestPath = path + s_extension;
 

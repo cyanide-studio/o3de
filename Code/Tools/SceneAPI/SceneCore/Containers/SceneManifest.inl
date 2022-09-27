@@ -66,6 +66,18 @@ namespace AZ
                     Views::MakeConvertIterator(m_values.cbegin(), SceneManifestConstDataConverter),
                     Views::MakeConvertIterator(m_values.cend(), SceneManifestConstDataConverter));
             }
+
+// @CYA EDIT: Allow to preserve FBX pivots (add parameter to manifest)
+            bool SceneManifest::DoesPreserveFBXPivots() const
+            {
+                return m_cyaPreserveFbxPivots;
+            }
+
+            void SceneManifest::PreserveFBXPivots(bool shouldPreservePivots)
+            {
+                m_cyaPreserveFbxPivots = shouldPreservePivots;
+            }
+// @CYA END
         } // Containers
     } // SceneAPI
 } // AZ
