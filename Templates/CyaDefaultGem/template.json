@@ -1,0 +1,153 @@
+{
+    "template_name": "CyaDefaultGem",
+    "template_restricted_platform_relative_path": "Templates/CyaDefaultGem",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates/CyaDefaultGem",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Cya Default Gem Template",
+    "summary": "",
+    "canonical_tags": [
+        "Template",
+        "Gem"
+    ],
+    "user_tags": [
+        "CyaDefaultGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}RequestBus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Game/${Name}Module.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Game/${Name}SystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Game/${Name}SystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Editor/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Editor/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Editor/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Tests/Game/${Name}Test.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Tests/Editor/${Name}EditorTest.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "gem.json",
+            "isTemplated": true
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "Code"
+        },
+        {
+            "dir": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Source"
+        },
+        {
+            "dir": "Code/Source/Base"
+        },
+        {
+            "dir": "Code/Source/Editor"
+        },
+        {
+            "dir": "Code/Source/Game"
+        },
+        {
+            "dir": "Code/Tests"
+        },
+        {
+            "dir": "Code/Tests/Editor"
+        },
+        {
+            "dir": "Code/Tests/Game"
+        }
+    ]
+}
