@@ -13,14 +13,16 @@ namespace AZ
    {
       const char* SceneWrapperBase::s_defaultSceneName = "myScene";
 
-      bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const char* fileName)
+// @CYA EDIT: Allow to preserve FBX pivots (pass manifest to LoadSceneFromFile)
+      bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const char* fileName, [[maybe_unused]] const SceneAPI::Containers::SceneManifest& manifest)
       {
           return false;
       }
-      bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const AZStd::string& fileName)
+      bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const AZStd::string& fileName, [[maybe_unused]] const SceneAPI::Containers::SceneManifest& manifest)
       {
-          return LoadSceneFromFile(fileName.c_str());
+          return LoadSceneFromFile(fileName.c_str(), manifest);
       }
+// @CYA END
 
       const std::shared_ptr<SDKNode::NodeWrapper> SceneWrapperBase::GetRootNode() const
       {

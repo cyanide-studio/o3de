@@ -12,6 +12,15 @@
    <item>
     <widget class="AzQtComponents::TabWidget" name="m_tabs"/>
    </item>
+<!-- @CYA EDIT: Allow to preserve FBX pivots -->
+   <item>
+    <widget class="QCheckBox" name="m_cyaPreserveFbxPivotsCheckbox">
+     <property name="text">
+      <string>Preserve FBX Pivots</string>
+     </property>
+    </widget>
+   </item>
+<!-- @CYA END -->
   </layout>
  </widget>
  <customwidgets>

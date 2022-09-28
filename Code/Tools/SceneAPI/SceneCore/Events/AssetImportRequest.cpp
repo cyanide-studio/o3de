@@ -85,6 +85,14 @@ namespace AZ
             {
                 return ProcessingResult::Ignored;
             }
+            
+// @CYA EDIT: Allow to preserve FBX pivots (split manifest loading from asset loading)
+            LoadingResult AssetImportRequest::LoadAssetManifest(Containers::Scene& /*scene*/, const AZStd::string& /*path*/, const Uuid& /*guid*/, 
+                RequestingApplication /*requester*/)
+            {
+                return LoadingResult::Ignored;
+            }
+// @CYA END
 
             LoadingResult AssetImportRequest::LoadAsset(Containers::Scene& /*scene*/, const AZStd::string& /*path*/, const Uuid& /*guid*/, 
                 RequestingApplication /*requester*/)
@@ -148,6 +156,9 @@ namespace AZ
                 }
 
                 LoadingResultCombiner filesLoaded;
+// @CYA EDIT: Allow to preserve FBX pivots (split manifest loading from asset loading)
+                AssetImportRequestBus::BroadcastResult(filesLoaded, &AssetImportRequestBus::Events::LoadAssetManifest, *scene, assetFilePath, sourceGuid, requester);
+// @CYA END
                 AssetImportRequestBus::BroadcastResult(filesLoaded, &AssetImportRequestBus::Events::LoadAsset, *scene, assetFilePath, sourceGuid, requester);
                 AssetImportRequestBus::Broadcast(&AssetImportRequestBus::Events::FinalizeAssetLoading, *scene, requester);
                 

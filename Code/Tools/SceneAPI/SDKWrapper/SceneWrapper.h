@@ -14,6 +14,13 @@ struct aiScene;
 
 namespace AZ
 {
+// @CYA EDIT: Allow to preserve FBX pivots (pass manifest to LoadSceneFromFile)
+    namespace SceneAPI::Containers
+    {
+        class SceneManifest;
+    }
+// @CYA END
+
     namespace SDKScene
     {
         class SceneWrapperBase
@@ -22,8 +29,10 @@ namespace AZ
             AZ_RTTI(SceneWrapperBase, "{703CD344-2C75-4F30-8CE2-6BDEF2511AFD}");
             virtual ~SceneWrapperBase() = default;
 
-            virtual bool LoadSceneFromFile(const char* fileName);
-            virtual bool LoadSceneFromFile(const AZStd::string& fileName);
+// @CYA EDIT: Allow to preserve FBX pivots (pass manifest to LoadSceneFromFile)
+            virtual bool LoadSceneFromFile(const char* fileName, const SceneAPI::Containers::SceneManifest& manifest);
+            virtual bool LoadSceneFromFile(const AZStd::string& fileName, const SceneAPI::Containers::SceneManifest& manifest);
+// @CYA END
 
             virtual const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const;
             virtual std::shared_ptr<SDKNode::NodeWrapper> GetRootNode();

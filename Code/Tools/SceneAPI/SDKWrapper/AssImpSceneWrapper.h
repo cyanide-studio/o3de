@@ -23,8 +23,10 @@ namespace AZ
             AssImpSceneWrapper(aiScene* aiScene);
             ~AssImpSceneWrapper() override = default;
 
-            bool LoadSceneFromFile(const char* fileName) override;
-            bool LoadSceneFromFile(const AZStd::string& fileName) override;
+// @CYA EDIT: Allow to preserve FBX pivots (pass manifest to LoadSceneFromFile)
+            bool LoadSceneFromFile(const char* fileName, const SceneAPI::Containers::SceneManifest& manifest) override;
+            bool LoadSceneFromFile(const AZStd::string& fileName, const SceneAPI::Containers::SceneManifest& manifest) override;
+// @CYA END
 
             const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const override;
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;

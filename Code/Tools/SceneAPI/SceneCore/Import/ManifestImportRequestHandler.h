@@ -32,8 +32,10 @@ namespace AZ
 
                 void GetManifestExtension(AZStd::string& result) override;
                 void GetGeneratedManifestExtension(AZStd::string& result) override;
-                Events::LoadingResult LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid,
+// @CYA EDIT: Allow to preserve FBX pivots (split manifest loading from asset loading)
+                Events::LoadingResult LoadAssetManifest(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid,
                     RequestingApplication requester) override;
+// @CYA END
                 
             private:
                 static const char* s_extension;

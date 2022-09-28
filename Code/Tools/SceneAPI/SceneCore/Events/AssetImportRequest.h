@@ -83,6 +83,10 @@ namespace AZ
 
                 //! Before asset loading starts this is called to allow for any required initialization.
                 virtual ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester);
+// @CYA EDIT: Allow to preserve FBX pivots (split manifest loading from asset loading)
+                //! Loads the asset manifest file
+                virtual LoadingResult LoadAssetManifest(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, RequestingApplication requester);
+// @CYA END
                 //! Starts the loading of the asset at the given path in the given scene. Loading optimizations can be applied based on
                 //! the calling application.
                 virtual LoadingResult LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid, RequestingApplication requester);

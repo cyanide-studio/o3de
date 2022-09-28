@@ -81,6 +81,12 @@ namespace AZ
                 inline ValueStorageData GetValueStorage();
                 inline ValueStorageConstData GetValueStorage() const;
 
+// @CYA EDIT: Allow to preserve FBX pivots (add parameter to manifest)
+                inline bool DoesPreserveFBXPivots() const;
+
+                inline void PreserveFBXPivots(bool shouldPreservePivots);
+// @CYA END
+
                 bool LoadFromFile(const AZStd::string& absoluteFilePath, SerializeContext* context = nullptr);
 
                 /**
@@ -108,6 +114,9 @@ namespace AZ
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
                 StorageLookup m_storageLookup;
                 ValueStorage m_values;
+// @CYA EDIT: Allow to preserve FBX pivots (add parameter to manifest)
+                bool m_cyaPreserveFbxPivots = false;
+// @CYA END
             AZ_POP_DISABLE_WARNING
             };
         } // Containers
