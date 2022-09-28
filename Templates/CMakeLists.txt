@@ -10,6 +10,9 @@ ly_install_directory(
     DIRECTORIES
         AssetGem
         CppToolGem
+# @CYA EDIT: add CyaDefaultGem to templates
+        CyaDefaultGem
+# @CYA END
         DefaultGem
         PrebuiltGem
         PythonToolGem
