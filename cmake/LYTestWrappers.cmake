@@ -21,8 +21,10 @@ ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-c
 ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox" "awsi")
 ly_set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
 
-# Set default test aborts to 25 minutes, avoids hitting the CI pipeline inactivity timeout usually set to 30 minutes
-ly_set(LY_TEST_DEFAULT_TIMEOUT 1500)
+# @CYA EDIT: default tests timeout set to 10mn instead of 25mn
+# Set default test aborts to 10 minutes, avoids hitting the CI pipeline inactivity timeout usually set to 30 minutes
+ly_set(LY_TEST_DEFAULT_TIMEOUT 600)
+# @CYA END
 
 # Add the CMake Test targets for each suite if testing is supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
