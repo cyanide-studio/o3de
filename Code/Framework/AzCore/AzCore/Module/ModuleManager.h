@@ -158,7 +158,9 @@ namespace AZ
         ////////////////////////////////////////////////////////////////////////
 
         // Helper function for initializing module entities
-        void ActivateEntities(const AZStd::vector<AZStd::shared_ptr<ModuleDataImpl>>& modulesToInit);
+// @CYA EDIT: Prevent crash when a module is registered in Init()
+        void ActivateEntities(AZStd::vector<AZStd::shared_ptr<ModuleDataImpl>> modulesToInit);
+// @CYA END
 
         // Helper function to preprocess the module names to handle any special processing
         static AZ::OSString PreProcessModule(AZStd::string_view moduleName);

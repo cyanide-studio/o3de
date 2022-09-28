@@ -644,7 +644,9 @@ namespace AZ
     //=========================================================================
     // ActivateEntities
     //=========================================================================
-    void ModuleManager::ActivateEntities(const AZStd::vector<AZStd::shared_ptr<ModuleDataImpl>>& modulesToInit)
+// @CYA EDIT: Prevent crash when a module is registered in Init()
+    void ModuleManager::ActivateEntities(AZStd::vector<AZStd::shared_ptr<ModuleDataImpl>> modulesToInit)
+// @CYA END
     {
         // Grab the system entity
         Entity* systemEntity = nullptr;
