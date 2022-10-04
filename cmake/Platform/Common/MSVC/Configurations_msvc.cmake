@@ -103,6 +103,15 @@ ly_append_configurations_options(
         /DEBUG              # Generate pdbs
 )
 
+# @CYA EDIT: fix sndbs with ninja build
+if (${CMAKE_GENERATOR} MATCHES "^Ninja")
+    ly_append_configurations_options(
+        COMPILATION
+            /WX-             # Disable warnings as errors
+    )
+endif()
+# @CYA END
+
 set(LY_BUILD_WITH_ADDRESS_SANITIZER FALSE CACHE BOOL "Builds using AddressSanitizer (ASan). Will disable Edit/Continue, Incremental building and Run-Time checks (default = FALSE)")
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
     set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE)
@@ -154,7 +163,13 @@ ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG
 # Once target_include_directories(... SYSTEM is supported, we can branch and use TargetIncludeSystemDirectories_supported.cmake
 # Reported this here: https://gitlab.kitware.com/cmake/cmake/-/issues/17904#note_1078281
 if(NOT CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
-    ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
+# @CYA EDIT: fix sndbs with ninja build
+    if (${CMAKE_GENERATOR} MATCHES "^Ninja")
+        ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/I")
+    else()
+        ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
+    endif()
+# @CYA END
 else()
     string(STRIP ${CMAKE_INCLUDE_SYSTEM_FLAG_CXX} CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
 endif()
