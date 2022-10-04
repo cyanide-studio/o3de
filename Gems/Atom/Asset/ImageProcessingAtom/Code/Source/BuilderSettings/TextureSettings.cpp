@@ -215,7 +215,9 @@ namespace ImageProcessingAtom
 
     StringOutcome TextureSettings::WriteTextureSetting(const AZStd::string& filepath, TextureSettings& textureSetting, AZ::SerializeContext* serializeContext)
     {
-        if (false == AZ::Utils::SaveObjectToFile<TextureSettings>(filepath, AZ::DataStream::StreamType::ST_XML, &textureSetting, serializeContext))
+// @CYA EDIT: texture settings human readable
+        if (false == AZ::Utils::SaveObjectToFile<TextureSettings>(filepath, AZ::DataStream::StreamType::ST_JSON, &textureSetting, serializeContext))
+// @CYA END
         {
             return STRING_OUTCOME_ERROR("Failed to write to file: " + filepath);
         }
