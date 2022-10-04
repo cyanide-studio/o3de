@@ -121,6 +121,7 @@ namespace EMotionFX
             void PlayMotion() override { PlayMotion(GetLastActiveChannel()); }
 
             // MultiMotionComponentRequestBus::Handler
+            AZ::u32 GetChannelsCount() const override;
             void LoopMotion(AZ::u8 channel, bool enable) override;
             bool GetLoopMotion(AZ::u8 channel) const override;
             void RetargetMotion(AZ::u8 channel, bool enable) override;

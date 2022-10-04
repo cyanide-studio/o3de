@@ -135,6 +135,7 @@ namespace EMotionFX
             if (behaviorContext)
             {
                 behaviorContext->EBus<MultiMotionComponentRequestBus>("MultiMotionComponentRequestBus")
+                    ->Event("GetChannelsCount", &MultiMotionComponentRequestBus::Events::GetChannelsCount)
                     ->Event("LoopMotion", &MultiMotionComponentRequestBus::Events::LoopMotion)
                     ->Event("GetLoopMotion", &MultiMotionComponentRequestBus::Events::GetLoopMotion)
                         ->Attribute("Hidden", AZ::Edit::Attributes::PropertyHidden)
@@ -247,14 +248,14 @@ namespace EMotionFX
 
         const MotionInstance* MultiMotionComponent::GetMotionInstance(AZ::u8 channel)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return nullptr;
             return m_channels[channel].m_motionInstance;
         }
 
         void MultiMotionComponent::SetMotionAssetId(AZ::u8 channel, const AZ::Data::AssetId& assetId)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
            m_channels[channel]. m_configuration.m_motionAsset = AZ::Data::Asset<MotionAsset>(assetId, azrtti_typeid<MotionAsset>());
@@ -309,7 +310,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::PlayMotion(AZ::u8 channel)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             m_channels[channel].m_motionInstance = PlayMotionInternal(m_actorInstance.get(), m_channels[channel].m_configuration, /*deleteOnZeroWeight*/true);
@@ -327,9 +328,14 @@ namespace EMotionFX
             }
         }
 
+        AZ::u32 MultiMotionComponent::GetChannelsCount() const
+        {
+            return (AZ::u32)m_channels.size();
+        }
+
         void MultiMotionComponent::LoopMotion(AZ::u8 channel, bool enable)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             m_channels[channel].m_configuration.m_loop = enable;
@@ -341,7 +347,7 @@ namespace EMotionFX
 
         bool MultiMotionComponent::GetLoopMotion(AZ::u8 channel) const
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return false;
 
             return m_channels[channel].m_configuration.m_loop;
@@ -349,7 +355,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::RetargetMotion(AZ::u8 channel, bool enable)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             m_channels[channel].m_configuration.m_retarget = enable;
@@ -361,7 +367,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::ReverseMotion(AZ::u8 channel, bool enable)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             m_channels[channel].m_configuration.m_reverse = enable;
@@ -373,7 +379,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::MirrorMotion(AZ::u8 channel, bool enable)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             m_channels[channel].m_configuration.m_mirror = enable;
@@ -385,6 +391,9 @@ namespace EMotionFX
 
         void MultiMotionComponent::SetPlaySpeed(AZ::u8 channel, float speed)
         {
+            if (m_channels.size() <= channel)
+                return;
+
             m_channels[channel].m_configuration.m_playspeed = speed;
             if (m_channels[channel].m_motionInstance)
             {
@@ -394,7 +403,7 @@ namespace EMotionFX
 
         float MultiMotionComponent::GetPlaySpeed(AZ::u8 channel) const
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return 0.f;
 
             return m_channels[channel].m_configuration.m_playspeed;
@@ -402,7 +411,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::PlayTime(AZ::u8 channel, float time)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             if (m_channels[channel].m_motionInstance)
@@ -422,7 +431,7 @@ namespace EMotionFX
 
         float MultiMotionComponent::GetPlayTime(AZ::u8 channel) const
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return 0.f;
 
             float result = 0.0f;
@@ -435,7 +444,7 @@ namespace EMotionFX
         
         float MultiMotionComponent::GetDuration(AZ::u8 channel) const
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return 0.f;
 
             float result = 0.0f;
@@ -448,7 +457,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::Motion(AZ::u8 channel, AZ::Data::AssetId assetId)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             if (m_channels[channel].m_configuration.m_motionAsset.GetId() != assetId)
@@ -522,7 +531,7 @@ namespace EMotionFX
 
         AZ::Data::AssetId MultiMotionComponent::GetMotion(AZ::u8 channel) const
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return {};
 
             return m_channels[channel].m_configuration.m_motionAsset.GetId();
@@ -530,7 +539,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::BlendInTime(AZ::u8 channel, float time)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             m_channels[channel].m_configuration.m_blendInTime = time;
@@ -538,7 +547,7 @@ namespace EMotionFX
 
         float MultiMotionComponent::GetBlendInTime(AZ::u8 channel) const
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return 0.f;
 
             return m_channels[channel].m_configuration.m_blendInTime;
@@ -546,7 +555,7 @@ namespace EMotionFX
 
         void MultiMotionComponent::BlendOutTime(AZ::u8 channel, float time)
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return;
 
             m_channels[channel].m_configuration.m_blendOutTime = time;
@@ -554,7 +563,7 @@ namespace EMotionFX
 
         float MultiMotionComponent::GetBlendOutTime(AZ::u8 channel) const
         {
-            if (m_channels.size() < channel)
+            if (m_channels.size() <= channel)
                 return 0.f;
 
             return m_channels[channel].m_configuration.m_blendOutTime;

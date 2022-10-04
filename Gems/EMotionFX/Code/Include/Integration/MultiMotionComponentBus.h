@@ -17,6 +17,7 @@ namespace EMotionFX
 
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
+            virtual AZ::u32 GetChannelsCount() const = 0;
             virtual void LoopMotion(AZ::u8 channel, bool enable) = 0;
             virtual bool GetLoopMotion(AZ::u8 channel) const = 0;
             virtual void RetargetMotion(AZ::u8 channel, bool enable) = 0;
