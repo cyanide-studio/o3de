@@ -105,6 +105,8 @@ ly_append_configurations_options(
 
 # @CYA EDIT: fix sndbs with ninja build
 if (${CMAKE_GENERATOR} MATCHES "^Ninja")
+    string(REPLACE "/WX" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REPLACE "/WX" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     ly_append_configurations_options(
         COMPILATION
             /WX-             # Disable warnings as errors
