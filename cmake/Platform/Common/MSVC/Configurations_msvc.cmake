@@ -167,13 +167,23 @@ ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG
 if(NOT CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
 # @CYA EDIT: fix sndbs with ninja build
     if (${CMAKE_GENERATOR} MATCHES "^Ninja")
+        message(WARNING "Ninja 1")
         ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/I")
     else()
+        message(WARNING ${CMAKE_GENERATOR}" Ninja 2")
         ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
     endif()
 # @CYA END
 else()
-    string(STRIP ${CMAKE_INCLUDE_SYSTEM_FLAG_CXX} CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
+# @CYA EDIT: fix sndbs with ninja build
+    if (${CMAKE_GENERATOR} MATCHES "^Ninja")
+        message(WARNING "Ninja 3")
+        ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/I")
+    else()
+        message(WARNING ${CMAKE_GENERATOR}" Ninja 4")
+        string(STRIP ${CMAKE_INCLUDE_SYSTEM_FLAG_CXX} CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
+    endif()
+# @CYA END
 endif()
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_unsupported.cmake)
