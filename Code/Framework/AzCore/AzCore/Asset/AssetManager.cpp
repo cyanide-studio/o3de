@@ -663,7 +663,9 @@ namespace AZ::Data
             }
             else
             {
-                AZ_Error("AssetDatabase", false, "Asset type %s already has a handler registered! New registration ignored!", assetType.ToString<AZStd::string>().c_str());
+// @CYA EDIT: warning instead of error to prevent failure
+                AZ_Warning("AssetDatabase", false, "Asset type %s already has a handler registered! New registration ignored!", assetType.ToString<AZStd::string>().c_str());
+// @CYA END
             }
         }
     }
@@ -732,7 +734,9 @@ namespace AZ::Data
             AZStd::scoped_lock<AZStd::recursive_mutex> l(m_catalogMutex);
             if (m_catalogs.insert(AZStd::make_pair(assetType, catalog)).second == false)
             {
-                AZ_Error("AssetDatabase", false, "Asset type %s already has a catalog registered! New registration ignored!", assetType.ToString<AZStd::string>().c_str());
+// @CYA EDIT: warning instead of error to prevent failure
+                AZ_Warning("AssetDatabase", false, "Asset type %s already has a catalog registered! New registration ignored!", assetType.ToString<AZStd::string>().c_str());
+// @CYA END
             }
         }
     }
