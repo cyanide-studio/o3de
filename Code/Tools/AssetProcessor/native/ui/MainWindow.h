@@ -95,6 +95,9 @@ public:
 
         // Event Log Details
         int logTypeColumnWidth = -1;
+
+        // Event Log Line Details
+        int contextDetailsTableMaximumRows = -1;
     };
 
     /*!
@@ -172,7 +175,6 @@ private:
     AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
     AssetProcessor::CacheServerData m_cacheServerData;
 
-    void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
     void ClearContextLogDetails();
 
