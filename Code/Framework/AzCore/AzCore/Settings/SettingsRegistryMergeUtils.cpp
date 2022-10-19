@@ -798,8 +798,14 @@ namespace AZ::SettingsRegistryMergeUtils
     {
         // cache a vector so that we don't mutate the registry while inside visitor iteration.
         AZStd::vector<AZStd::pair<AZStd::string, AZ::IO::FixedMaxPath>> collectedGems;
+// @CYA EDIT: Add gem order
+        AZStd::vector<AZStd::pair<AZStd::string, s64>> gemOrder;
+// @CYA END
+        
         auto CollectManifestGems =
-            [&collectedGems](AZStd::string_view manifestKey, AZStd::string_view gemName, AZ::IO::PathView gemRootPath)
+// @CYA EDIT: Add gem order
+            [&collectedGems, &gemOrder](AZStd::string_view manifestKey, AZStd::string_view gemName, AZ::IO::PathView gemRootPath)
+// @CYA END
         {
             if (manifestKey == GemNameKey)
             {
@@ -808,8 +814,8 @@ namespace AZ::SettingsRegistryMergeUtils
 // @CYA EDIT: Add gem order
             else if (manifestKey.ends_with("/Order"))
             {
-                //const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s", ManifestGemsRootKey, AZ_STRING_ARG(manifestKey));
-                //registry.Set(manifestGemJsonPath, aznumeric_cast<s64>(AZStd::stoi(AZStd::string(gemName))));
+                AZStd::string name = manifestKey.substr(0, manifestKey.find_last_of('/'));
+                gemOrder.push_back({ name, aznumeric_cast<s64>(AZStd::stoi(AZStd::string(gemName))) });
             }
 // @CYA END
         };
@@ -821,6 +827,15 @@ namespace AZ::SettingsRegistryMergeUtils
             using FixedValueString = SettingsRegistryInterface::FixedValueString;
             const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s/Path", ManifestGemsRootKey, AZ_STRING_ARG(gemName));
             registry.Set(manifestGemJsonPath, gemRootPath.LexicallyNormal().Native());
+
+// @CYA EDIT: Add gem order
+            auto it = AZStd::find_if(gemOrder.begin(), gemOrder.end(), [&gemName](const AZStd::pair<AZStd::string, s64>& kp) { return kp.first == gemName; });
+            if (it != gemOrder.end())
+            {
+                const auto manifestGemOrderJsonPath = FixedValueString::format("%s/%.*s/Order", ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+                registry.Set(manifestGemOrderJsonPath, it->second);
+            }
+// @CYA END
         }
     }
 
