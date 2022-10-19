@@ -57,7 +57,10 @@ namespace ImageProcessingAtom
                 ->Field("MaintainAlphaCoverage", &TextureSettings::m_maintainAlphaCoverage)
                 ->Field("MipMapAlphaAdjustments", &TextureSettings::m_mipAlphaAdjust)
                 ->Field("PlatformSpecificOverrides", &TextureSettings::m_platfromOverrides)
-                ->Field("OverridingPlatform", &TextureSettings::m_overridingPlatform);
+                ->Field("OverridingPlatform", &TextureSettings::m_overridingPlatform)
+// @CYA EDIT: Add tags for textures
+                ->Field("Tags", &TextureSettings::m_tags);
+// @CYA END
 
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
@@ -119,7 +122,10 @@ namespace ImageProcessingAtom
             m_suppressEngineReduce == other.m_suppressEngineReduce &&
             m_maintainAlphaCoverage == other.m_maintainAlphaCoverage &&
             m_mipGenEval == other.m_mipGenEval &&
-            m_mipGenType == other.m_mipGenType;
+            m_mipGenType == other.m_mipGenType &&
+// @CYA EDIT: Add tags for textures
+            m_tags == other.m_tags;
+// @CYA END
     }
 
     bool TextureSettings::Equals(const TextureSettings& other, AZ::SerializeContext* serializeContext)

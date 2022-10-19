@@ -813,7 +813,11 @@ namespace ImageProcessingAtom
             m_input->m_sourceAssetId,
             m_input->m_imageName,
             m_input->m_presetSetting.m_numResidentMips,
-            subId);
+            subId,
+// @CYA EDIT: Add tags for textures
+            m_input->m_textureSetting.m_tags
+// @CYA END
+            );
 
         if (assetProducer.BuildImageAssets())
         {

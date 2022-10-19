@@ -44,8 +44,11 @@ set(FILES
     Include/Atom/RPI.Public/Image/AttachmentImage.h
     Include/Atom/RPI.Public/Image/AttachmentImagePool.h
     Include/Atom/RPI.Public/Image/DefaultStreamingImageController.h
+    Include/Atom/RPI.Public/Image/ImageQuality.h
     Include/Atom/RPI.Public/Image/ImageSystem.h
     Include/Atom/RPI.Public/Image/ImageSystemInterface.h
+    Include/Atom/RPI.Public/Image/ImageTagBus.h
+    Include/Atom/RPI.Public/Image/ImageTagSystemComponent.h
     Include/Atom/RPI.Public/Image/StreamingImage.h
     Include/Atom/RPI.Public/Image/StreamingImageContext.h
     Include/Atom/RPI.Public/Image/StreamingImageController.h
@@ -129,6 +132,7 @@ set(FILES
     Source/RPI.Public/Image/AttachmentImagePool.cpp
     Source/RPI.Public/Image/DefaultStreamingImageController.cpp
     Source/RPI.Public/Image/ImageSystem.cpp
+    Source/RPI.Public/Image/ImageTagSystemComponent.cpp
     Source/RPI.Public/Image/StreamingImage.cpp
     Source/RPI.Public/Image/StreamingImageContext.cpp
     Source/RPI.Public/Image/StreamingImageController.cpp

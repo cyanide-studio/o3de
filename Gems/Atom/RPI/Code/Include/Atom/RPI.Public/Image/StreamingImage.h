@@ -205,6 +205,10 @@ namespace AZ
 
             // The image asset associated with this image instance.
             Data::Asset<StreamingImageAsset> m_imageAsset;
+
+// @CYA EDIT: Add tags for textures
+            size_t m_firstActiveMipChainIndex = 0;
+// @CYA END
         };
     }
 }
