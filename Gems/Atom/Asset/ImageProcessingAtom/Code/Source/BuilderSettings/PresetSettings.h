@@ -54,7 +54,9 @@ namespace ImageProcessingAtom
         // "rgbweights". specify preset for weighting of R,G,B channels (used by compressor)
         RGBWeight m_rgbWeight = RGBWeight::uniform;
         ColorSpace m_srcColorSpace = ColorSpace::sRGB;
-        ColorSpace m_destColorSpace = ColorSpace::autoSelect;
+// @CYA EDIT: image preset colorspace is now sRGB by default
+        ColorSpace m_destColorSpace = ColorSpace::sRGB;
+// @CUA END
 
         // file masks used for helping select default preset and option preset list in texture property dialog
         AZStd::vector<FileMask> m_fileMasks;
