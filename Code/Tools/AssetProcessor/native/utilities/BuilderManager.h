@@ -25,7 +25,9 @@ namespace AssetProcessor
     struct BuilderRef;
 
     //! Indicates if job request files should be created on success.  Can be useful for debugging
-    static const bool s_createRequestFileForSuccessfulJob = false;
+// @CYA EDIT: enable assetbuilder cmdline log
+    static const bool s_createRequestFileForSuccessfulJob = true;
+// @CYA END
 
     //! Enum used to indicate the purpose of a builder which may result in special handling
     enum class BuilderPurpose
