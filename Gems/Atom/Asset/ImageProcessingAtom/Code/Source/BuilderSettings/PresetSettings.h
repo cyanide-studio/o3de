@@ -82,6 +82,10 @@ namespace ImageProcessingAtom
         // 0 - no lower resolution limit (default)
         AZ::u32 m_minTextureSize = 0;
 
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        AZ::u32 m_highPassMip = 0;
+// @CYA END
+
         bool m_isPowerOf2 = false;
 
         //"reduce",  0=no size reduce /1=half resolution /2=quarter resolution, etc"

@@ -58,6 +58,9 @@ namespace ImageProcessingAtom
         StepAverageColor,
         StepGlossFromNormal,
         StepPostNormalize,
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        StepCreateHighPass,
+// @CYA END
         StepConvertOutputColorSpace,
         StepConvertPixelFormat,
         StepSaveToFile,
@@ -76,6 +79,9 @@ namespace ImageProcessingAtom
         "AverageColor",
         "GlossFromNormal",
         "PostNormalize",
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        "CreateHighPass",
+// @CYA END
         "ConvertOutputColorSpace",
         "ConvertPixelFormat",
         "SaveToFile",
@@ -326,6 +332,14 @@ namespace ImageProcessingAtom
                 m_image->Get()->AddImageFlags(EIF_RenormalizedTexture);
             }
             break;
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        case StepCreateHighPass:
+            if (m_input->m_presetSetting.m_highPassMip > 0)
+            {
+                m_image->CreateHighPass(m_input->m_presetSetting.m_highPassMip);
+            }
+            break;
+// @CYA END
         case StepConvertOutputColorSpace:
             // convert image from linear space to desired output color space
             ConvertToOuputColorSpace();
