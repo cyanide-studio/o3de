@@ -112,6 +112,16 @@ namespace AZ
             }
         }
 
+// @CYA EDIT: Add tags for textures
+        void StreamingImageAssetCreator::AddTag(AZ::Name tag)
+        {
+            if (ValidateIsReady())
+            {
+                m_asset->m_tags.emplace(AZStd::move(tag));
+            }
+        }
+// @CYA END
+
         bool StreamingImageAssetCreator::End(Data::Asset<StreamingImageAsset>& result)
         {
             if (!ValidateIsReady())
