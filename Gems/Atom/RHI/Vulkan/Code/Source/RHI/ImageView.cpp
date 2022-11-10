@@ -150,7 +150,9 @@ namespace AZ
                         AZ_Assert(width == height, "Image of Cube or CubeArray form a square.");
                         AZ_Assert(depth == 1, "Depth of Cube or CubeArray = 1.");
                         AZ_Assert(samples == 1, "Sample of Cube or CubeArray = 1.");
-                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers % 6 == 0 for Cube or CubeArray.");
+// @CYA EDIT: fix CRT exception
+                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers %% 6 == 0 for Cube or CubeArray.");
+// @CYA END
                         if (arrayLayers == 6)
                         {
                             return VK_IMAGE_VIEW_TYPE_CUBE;
