@@ -478,7 +478,12 @@ namespace AZ
             {
                 m_configuration.m_modelAsset = modelAsset;
                 m_configuration.m_modelAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
-                RefreshModelRegistration();
+// @CYA EDIT: Don't RefreshModelRegistration if no model was registered
+                if (m_meshHandle.IsValid())
+                    RefreshModelRegistration();
+                else
+                    RegisterModel();
+// @CYA END
             }
         }
 

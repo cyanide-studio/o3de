@@ -22,7 +22,9 @@ namespace AssetProcessor
     struct BuilderRef;
 
     //! Indicates if job request files should be created on success.  Can be useful for debugging
-    static const bool s_createRequestFileForSuccessfulJob = false;
+// @CYA EDIT: enable assetbuilder cmdline log
+    static const bool s_createRequestFileForSuccessfulJob = true;
+// @CYA END
 
     //! This EBUS is used to request a free builder from the builder manager pool
     class BuilderManagerBusTraits

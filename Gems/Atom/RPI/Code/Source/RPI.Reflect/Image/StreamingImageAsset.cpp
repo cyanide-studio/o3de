@@ -37,6 +37,9 @@ namespace AZ
                     ->Field("m_tailMipChain", &StreamingImageAsset::m_tailMipChain)
                     ->Field("m_totalImageDataSize", &StreamingImageAsset::m_totalImageDataSize)
                     ->Field("m_averageColor", &StreamingImageAsset::m_averageColor)
+// @CYA EDIT: Add tags for textures
+                    ->Field("m_tags", &StreamingImageAsset::m_tags)
+// @CYA END
                     ;
             }
         }
@@ -132,6 +135,13 @@ namespace AZ
 
             return imageDescriptor;
         }
+
+// @CYA EDIT: Add tags for textures
+        const AZStd::unordered_set<AZ::Name>& StreamingImageAsset::GetTags() const
+        {
+            return m_tags;
+        }
+// @CYA END
 
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
         {
