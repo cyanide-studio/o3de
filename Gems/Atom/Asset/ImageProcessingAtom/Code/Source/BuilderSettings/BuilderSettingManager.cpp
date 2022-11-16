@@ -699,19 +699,11 @@ namespace ImageProcessingAtom
         //if default preset is one of our presets, take it
         if (maskPresets)
         {
-            if (maskPresets->find(m_defaultPreset) != maskPresets->end())
-            {
-                outPreset = m_defaultPreset;
-            }
-            else
+            if (maskPresets->find(outPreset) == maskPresets->end())
             {
                 //else take one of our preset at random (FIXME: this should be the first of the list but is random because of unordered_set, maybe switch to vector?)
                 outPreset = *maskPresets->begin();
             }
-        }
-        else
-        {
-            outPreset = m_defaultPreset;
         }
 // @CYA END
         return outPreset;
