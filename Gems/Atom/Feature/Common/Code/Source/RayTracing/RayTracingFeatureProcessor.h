@@ -214,6 +214,10 @@ namespace AZ
             using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
             BlasInstanceMap& GetBlasInstances() { return m_blasInstanceMap; }
 
+// @CYA EDIT: add RayTracingFeatureProcessor::IsRayTracingEnabled()
+            bool IsRayTracingEnabled() const { return m_rayTracingEnabled; }
+// @CYA END
+
         private:
 
             AZ_DISABLE_COPY_MOVE(RayTracingFeatureProcessor);

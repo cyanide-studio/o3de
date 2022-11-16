@@ -963,7 +963,9 @@ namespace AZ
             }
 
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (!rayTracingFeatureProcessor)
+// @CYA EDIT: disable SetRayTracingData if raytracing is disabled
+            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->IsRayTracingEnabled())
+// @CYA END
             {
                 return;
             }
