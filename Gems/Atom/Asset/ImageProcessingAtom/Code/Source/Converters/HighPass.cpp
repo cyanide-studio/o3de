@@ -56,8 +56,10 @@ namespace ImageProcessingAtom
             // linear interpolation
             FilterImage(MipGenType::triangle, MipGenEvalType::sum, 0.0f, 0.0f, m_img, dwMipDown, newImage, dstMip, NULL, NULL);
 
-            const AZ::u32 pixelCountIn = m_img->GetWidth(dstMip) * m_img->GetHeight(dstMip);
-            const AZ::u32 pixelCountOut = newImage->GetWidth(dstMip) * newImage->GetHeight(dstMip);
+            // @CYA EDIT: Tag unused variables as maybe_unused (fixes compilation with VS 2022)
+            [[maybe_unused]] const AZ::u32 pixelCountIn = m_img->GetWidth(dstMip) * m_img->GetHeight(dstMip);
+            [[maybe_unused]] const AZ::u32 pixelCountOut = newImage->GetWidth(dstMip) * newImage->GetHeight(dstMip);
+            // @CYA END
 
             // substraction
             AZ::u8* srcPixelBuf;
