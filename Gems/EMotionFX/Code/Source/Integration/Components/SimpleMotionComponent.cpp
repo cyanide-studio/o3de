@@ -261,7 +261,39 @@ namespace EMotionFX
         void SimpleMotionComponent::PlayMotion()
         {
             m_motionInstance = PlayMotionInternal(m_actorInstance.get(), m_configuration, /*deleteOnZeroWeight*/true);
+// @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+            for (auto* handler : m_eventHandlers)
+            {
+                m_motionInstance->AddEventHandler(handler);
+            }
+// @CYA END
         }
+
+ // @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+        void SimpleMotionComponent::AddEventHandler(MotionInstanceEventHandler* eventHandler)
+        {
+            if (m_motionInstance)
+                m_motionInstance->AddEventHandler(eventHandler);
+            
+            m_eventHandlers.push_back(eventHandler);
+        }
+
+        void SimpleMotionComponent::RemoveEventHandler(MotionInstanceEventHandler* eventHandler)
+        {
+            if (m_motionInstance)
+                m_motionInstance->RemoveEventHandler(eventHandler);
+
+            m_eventHandlers.erase(std::remove(m_eventHandlers.begin(), m_eventHandlers.end(), eventHandler), m_eventHandlers.end());
+        }
+
+        void SimpleMotionComponent::RemoveAllEventHandlers()
+        {
+            if (m_motionInstance)
+                m_motionInstance->RemoveAllEventHandlers();
+            
+            m_eventHandlers.clear();
+        }
+ // @CYA END
 
         void SimpleMotionComponent::RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance)
         {

@@ -15,6 +15,9 @@
 namespace EMotionFX
 {
     class MotionInstance;
+// @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+    class MotionInstanceEventHandler;
+// @CYA END
 
     namespace Integration
     {
@@ -42,6 +45,11 @@ namespace EMotionFX
             virtual void BlendOutTime(float time) = 0;
             virtual float GetBlendOutTime() const = 0;
             virtual void PlayMotion() = 0;
+// @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+            virtual void AddEventHandler(MotionInstanceEventHandler* eventHandler) = 0;
+            virtual void RemoveEventHandler(MotionInstanceEventHandler* eventHandler) = 0;
+            virtual void RemoveAllEventHandlers() = 0;
+// @CYA END
         };
         using SimpleMotionComponentRequestBus = AZ::EBus<SimpleMotionComponentRequests>;
     }

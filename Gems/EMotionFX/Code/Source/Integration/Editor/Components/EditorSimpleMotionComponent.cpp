@@ -165,8 +165,40 @@ namespace EMotionFX
                 // motion instances if it's blend weight is zero.
                 // The Editor preview should preview the motion in place to prevent off center movement.
                 m_motionInstance = SimpleMotionComponent::PlayMotionInternal(m_actorInstance, m_configuration, /*deleteOnZeroWeight*/false);
+// @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+                for (auto* handler : m_eventHandlers)
+                {
+                    m_motionInstance->AddEventHandler(handler);
+                }
+// @CYA END
             }
         }
+
+// @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+        void EditorSimpleMotionComponent::AddEventHandler(MotionInstanceEventHandler* eventHandler)
+        {
+            if (m_motionInstance)
+                m_motionInstance->AddEventHandler(eventHandler);
+
+            m_eventHandlers.push_back(eventHandler);
+        }
+
+        void EditorSimpleMotionComponent::RemoveEventHandler(MotionInstanceEventHandler* eventHandler)
+        {
+            if (m_motionInstance)
+                m_motionInstance->RemoveEventHandler(eventHandler);
+
+            m_eventHandlers.erase(std::remove(m_eventHandlers.begin(), m_eventHandlers.end(), eventHandler), m_eventHandlers.end());
+        }
+
+        void EditorSimpleMotionComponent::RemoveAllEventHandlers()
+        {
+            if (m_motionInstance)
+                m_motionInstance->RemoveAllEventHandlers();
+
+            m_eventHandlers.clear();
+        }
+// @CYA END
 
         void EditorSimpleMotionComponent::RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance)
         {

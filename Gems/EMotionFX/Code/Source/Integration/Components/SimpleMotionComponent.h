@@ -108,6 +108,11 @@ namespace EMotionFX
             void BlendOutTime(float time) override;
             float GetBlendOutTime() const override;
             void PlayMotion() override;
+// @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+            void AddEventHandler(MotionInstanceEventHandler* eventHandler) override;
+            void RemoveEventHandler(MotionInstanceEventHandler* eventHandler) override;
+            void RemoveAllEventHandlers() override;
+// @CYA END
 
             const EMotionFX::MotionInstance* GetMotionInstance();
 
@@ -130,6 +135,9 @@ namespace EMotionFX
             EMotionFX::MotionInstance*                  m_motionInstance;       ///< Motion to play on the actor
             AZ::Data::Asset<MotionAsset>                m_lastMotionAsset;      ///< Last active motion asset, kept alive for blending.
             EMotionFX::MotionInstance*                  m_lastMotionInstance;   ///< Last active motion instance, kept alive for blending.
+// @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
+            AZStd::vector<MotionInstanceEventHandler*>  m_eventHandlers;        ///< Motion events list
+// @CYA END
         };
     } // namespace Integration
 } // namespace EMotionFX
