@@ -52,6 +52,9 @@ namespace EMotionFX
 #endif // EMFX_DEVELOPMENT_BUILD
 
         m_eventHandlersByEventType.resize(EVENT_TYPE_MOTION_INSTANCE_LAST_EVENT - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT + 1);
+// @CYA EDIT:
+        m_eventHandlers.resize(EVENT_TYPE_MOTION_INSTANCE_LAST_EVENT - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT + 1);
+// @CYA END
         GetEventManager().OnCreateMotionInstance(this);
     }
 
@@ -359,6 +362,13 @@ namespace EMotionFX
         {
             return;
         }
+// @CYA EDIT: Add cache system to allow vector edition in multi-thread context to avoid to edit the frame readed vector
+        {
+            // clone event handlers for the frame
+            AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
+            m_eventHandlersByEventType = m_eventHandlers;
+        }
+// @CYA END
 
         const float currentTimePreUpdate = m_currentTime;
         UpdateTime(timePassed);
@@ -638,34 +648,43 @@ namespace EMotionFX
         AZ_Assert(eventHandler, "Expected non-null event handler");
         eventHandler->SetMotionInstance(this);
 
+// @CYA EDIT : Add cache system to allow vector edition in multi-thread context to avoid to edit the frame readed vector
+        AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
         {
-            AZ_Assert(AZStd::find(m_eventHandlersByEventType[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].begin(), m_eventHandlersByEventType[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(), eventHandler) == m_eventHandlersByEventType[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(),
+            AZ_Assert(AZStd::find(m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].begin(), m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(), eventHandler) == m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(),
                 "Event handler already added to manager");
-            m_eventHandlersByEventType[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].emplace_back(eventHandler);
+            m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].emplace_back(eventHandler);
         }
+// @CYA END
     }
 
     // remove a given handler from memory
     void MotionInstance::RemoveEventHandler(MotionInstanceEventHandler* eventHandler)
     {
+// @CYA EDIT : Add cache system to allow vector edition in multi-thread context to avoid to edit the frame readed vector
+        AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
         {
-            EventHandlerVector& eventHandlers = m_eventHandlersByEventType[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+            EventHandlerVector& eventHandlers = m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
             eventHandlers.erase(AZStd::remove(eventHandlers.begin(), eventHandlers.end(), eventHandler), eventHandlers.end());
         }
+// @CYA END
     }
 
     //  remove all event handlers
     void MotionInstance::RemoveAllEventHandlers()
     {
+// @CYA EDIT : Add cache system to allow vector edition in multi-thread context to avoid to edit the frame readed vector
+        AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
 #ifdef AZ_DEBUG_BUILD
-        for (const EventHandlerVector& eventHandlers : m_eventHandlersByEventType)
+        for (const EventHandlerVector& eventHandlers : m_eventHandlers)
         {
             AZ_Assert(eventHandlers.empty(), "Expected all event handlers to be removed");
         }
 #endif
-        m_eventHandlersByEventType.clear();
+        m_eventHandlers.clear();
+// @CYA END
     }
 
     //--------------------

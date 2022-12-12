@@ -886,6 +886,10 @@ namespace EMotionFX
         using EventHandlerVector = AZStd::vector<MotionInstanceEventHandler*>;
 
         AZStd::vector<EventHandlerVector> m_eventHandlersByEventType; /**< The event handler to use to process events organized by EventTypes. */
+// @CYA EDIT: Add cache system to allow vector edition in multi-thread context to avoid to edit the frame readed vector
+        AZStd::mutex m_eventsMutex;
+        AZStd::vector<EventHandlerVector> m_eventHandlers; /**< The event handler to use to process events organized by EventTypes. */
+// @CYA END
         float               m_currentTime = 0.0f;           /**< The current playtime. */
         float               m_timeDiffToEnd = 0.0f;         /**< The time it takes until we reach the loop point in the motion. This also takes the playback direction into account (backward or forward play). */
         float               m_freezeAtTime = -1.0f;         /**< Freeze at a given time offset in seconds. The current play time would continue running though, and a blend out would be triggered, unlike the m_freezeAtLastFrame. Set to negative value to disable. Default=-1.*/
