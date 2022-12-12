@@ -390,7 +390,7 @@ namespace AzFramework
         EntityIdContextQueryBus::EventResult(owningContextId, entityId, &EntityIdContextQueryBus::Events::GetOwningContextId);
         if (owningContextId == m_contextId)
         {
-            m_entityOwnershipService->DestroyEntityById(entityId);
+            m_entityOwnershipService->HandleEntityBeingDestroyed(entityId);
         }
     }
 

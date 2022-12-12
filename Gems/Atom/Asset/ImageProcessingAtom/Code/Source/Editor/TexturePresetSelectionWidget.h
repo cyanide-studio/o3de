@@ -41,6 +41,11 @@ namespace ImageProcessingAtomEditor
         void OnChangePreset(int index);
         void OnPresetInfoButton();
 
+// @CYA EDIT: Add tags for textures
+        void OnTagAdded();
+        void OnTagRemoved();
+// @CYA END
+
     protected:
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus

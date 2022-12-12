@@ -15,7 +15,6 @@
 #include <RHI/Device.h>
 #include <RHI/MemoryView.h>
 // @CYA EDIT: Replace O3DE allocator by VMA
-#include <RHI/Conversion.h>
 #include <vma/vk_mem_alloc.h>
 // @CYA END
 

@@ -66,6 +66,10 @@ namespace ImageProcessingAtom
         bool GammaToLinearRGBA32F(bool bDeGamma);
         void LinearToGamma();
 
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        void CreateHighPass(uint32 dwMipDown);
+// @CYA END
+ 
         //convert various original cubemap layouts to new layout
         bool ConvertCubemapLayout(CubemapLayoutType newLayout);
     };

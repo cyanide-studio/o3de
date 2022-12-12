@@ -557,6 +557,14 @@ namespace ImageProcessingAtom
                     AZ_Warning(LogWindow, false, "File mask '%s' is invalid. It must contain only a single '%c' character.", filemask.c_str(), FileMaskDelimiter);
                     continue;
                 }
+                else if (filemask.find(AZ_FILESYSTEM_EXTENSION_SEPARATOR) != AZStd::string::npos)
+                {
+                    AZ_Warning(LogWindow, false,
+                        "File mask '%s' is invalid. It must not contain a file extension separator ('%c').",
+                        filemask.c_str(),
+                        AZ_FILESYSTEM_EXTENSION_SEPARATOR);
+                    continue;
+                }
 
                 extraString += (filemask + preset.m_name.GetCStr());
 
@@ -590,10 +598,13 @@ namespace ImageProcessingAtom
     AZStd::string BuilderSettingManager::GetFileMask(AZStd::string_view imageFilePath) const
     {
         //get file name
-        AZStd::string fileName;
         QString lowerFileName = imageFilePath.data();
         lowerFileName = lowerFileName.toLower();
-        AzFramework::StringFunc::Path::GetFileName(lowerFileName.toUtf8().constData(), fileName);
+
+        // If the complete file name contains multiple extension separators ('.'), only use the base name before the first separator
+        // for the file mask. For example, 'name_filemask.something.extension' will only use 'name_filemask', producing a result
+        // of '_filemask' that is returned from this method.
+        AZStd::string fileName(QFileInfo(lowerFileName).baseName().toUtf8());
 
         //get the substring from last '_'
         size_t lastUnderScore = fileName.find_last_of(FileMaskDelimiter);
@@ -643,48 +654,59 @@ namespace ImageProcessingAtom
 
     PresetName BuilderSettingManager::GetSuggestedPreset(AZStd::string_view imageFilePath) const
     {
-// @CYA EDIT: Rework function to handle multiples presets for mask if one of them is the default preset
-        //get file mask of this image file
+        PresetName emptyPreset;
+
+
+      
+  		//get file mask of this image file
         AZStd::string fileMask = GetFileMask(imageFilePath);
 
+        PresetName outPreset = emptyPreset;
+
         //use the preset filter map to find
+// @CYA EDIT: Rework function to handle multiples presets for mask if one of them is the default preset
         const AZStd::unordered_set<PresetName>* maskPresets = nullptr;
-        if (!fileMask.empty())
+// @CYA END
+        if (outPreset.IsEmpty() && !fileMask.empty())
         {
             auto& presetFilterMap = GetPresetFilterMap();
             if (presetFilterMap.find(fileMask) != presetFilterMap.end())
             {
+// @CYA EDIT: Rework function to handle multiples presets for mask if one of them is the default preset
                 maskPresets = &presetFilterMap.find(fileMask)->second;
                 // only one preset matches? use it
                 if (maskPresets->size() == 1)
-                    return *maskPresets->begin();
+                    outPreset = *maskPresets->begin();
+// @CYA END
             }
         }
 
-        // if there's no preset or more than one, try to identify the best preset based on alpha
-        PresetName defaultPreset = m_defaultPreset;
-        auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
-        if (image)
-        {
-            EAlphaContent imageAlphaContent = image->GetAlphaContent();
-            if (imageAlphaContent != EAlphaContent::eAlphaContent_Absent && imageAlphaContent != EAlphaContent::eAlphaContent_OnlyWhite)
-                defaultPreset = m_defaultPresetAlpha;
+        if (outPreset == emptyPreset)
+        {        
+            auto image = IImageObjectPtr(LoadImageFromFile(imageFilePath));
+            if (image && ((image->GetAlphaContent() == EAlphaContent::eAlphaContent_Absent
+                || image->GetAlphaContent() == EAlphaContent::eAlphaContent_OnlyWhite)))
+            {
+                outPreset = m_defaultPreset;
+            }
+            else
+            {
+                outPreset = m_defaultPresetAlpha;
+            }
         }
 
+// @CYA EDIT: Rework function to handle multiples presets for mask if one of them is the default preset
         //if default preset is one of our presets, take it
         if (maskPresets)
         {
-            if (maskPresets->find(defaultPreset) != maskPresets->end())
-                return defaultPreset;
-
-            //else take one of our preset at random (FIXME: this should be the first of the list but is random because of unordered_set, maybe switch to vector?)
-            return *maskPresets->begin();
-        }
-        else
-        {
-            return defaultPreset;
+            if (maskPresets->find(outPreset) == maskPresets->end())
+            {
+                //else take one of our preset at random (FIXME: this should be the first of the list but is random because of unordered_set, maybe switch to vector?)
+                outPreset = *maskPresets->begin();
+            }
         }
 // @CYA END
+        return outPreset;
     }
 
     AZStd::vector<AZStd::string> BuilderSettingManager::GetPossiblePresetPaths(const PresetName& presetName) const

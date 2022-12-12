@@ -37,10 +37,10 @@ namespace ImageProcessingAtom
         PresetSettings& operator= (const PresetSettings& other);
         bool operator== (const PresetSettings& other) const;
         static void Reflect(AZ::ReflectContext* context);
-        
+
         // unique id for the preset
         // this uuid will be deprecated. The preset name will be used as an unique id for the preset
-        AZ::Uuid m_uuid = 0;
+        AZ::Uuid m_uuid;
 
         PresetName m_name;
 
@@ -54,7 +54,9 @@ namespace ImageProcessingAtom
         // "rgbweights". specify preset for weighting of R,G,B channels (used by compressor)
         RGBWeight m_rgbWeight = RGBWeight::uniform;
         ColorSpace m_srcColorSpace = ColorSpace::sRGB;
-        ColorSpace m_destColorSpace = ColorSpace::autoSelect;
+// @CYA EDIT: image preset colorspace is now sRGB by default
+        ColorSpace m_destColorSpace = ColorSpace::sRGB;
+// @CUA END
 
         // file masks used for helping select default preset and option preset list in texture property dialog
         AZStd::vector<FileMask> m_fileMasks;
@@ -80,6 +82,10 @@ namespace ImageProcessingAtom
         // 0 - no lower resolution limit (default)
         AZ::u32 m_minTextureSize = 0;
 
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        AZ::u32 m_highPassMip = 0;
+// @CYA END
+
         bool m_isPowerOf2 = false;
 
         //"reduce",  0=no size reduce /1=half resolution /2=quarter resolution, etc"
@@ -91,7 +97,7 @@ namespace ImageProcessingAtom
 
         //settings for mipmap generation. it's null if this preset disable mipmap.
         AZStd::unique_ptr<MipmapSettings> m_mipmapSetting;
-        
+
         //"glossfromnormals". Bake normal variance into smoothness stored in alpha channel
         AZ::u32 m_glossFromNormals = 0;
 
@@ -116,7 +122,7 @@ namespace ImageProcessingAtom
     protected:
         void DeepCopyMembers(const PresetSettings& other);
     };
-    
+
     class MultiplatformPresetSettings
     {
     public:
@@ -144,7 +150,7 @@ namespace ImageProcessingAtom
         PresetSettings m_defaultPreset;
         AZStd::unordered_map<PlatformName, PresetSettings> m_presets;
     };
-    
+
 } // namespace ImageProcessingAtom
 
 namespace AZ

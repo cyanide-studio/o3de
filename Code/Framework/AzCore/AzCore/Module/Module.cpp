@@ -19,10 +19,7 @@ namespace AZ
         for (AZ::ComponentDescriptor* descriptor : m_descriptors)
         {
             // Deletes and "un-reflects" the descriptor
-// @CYA EDIT: Prevent crash if descriptor is nul
-            if (descriptor)
-                descriptor->ReleaseDescriptor();
-// @CYA END
+            descriptor->ReleaseDescriptor();
         }
     }
 

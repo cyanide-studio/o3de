@@ -61,6 +61,7 @@ set(FILES
     Source/ImageLoader/QtImageLoader.cpp
     Source/ImageLoader/TIFFLoader.cpp
     Source/ImageLoader/ExrLoader.cpp
+    Source/ImageLoader/TgaLoader.cpp
     Source/Editor/EditorCommon.h
     Source/Editor/EditorCommon.cpp
     Source/Editor/ImagePopup.cpp
@@ -102,6 +103,9 @@ set(FILES
     Source/Converters/Cubemap.cpp
     Source/Converters/Histogram.cpp
     Source/Converters/Histogram.h
+# @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+	Source/Converters/HighPass.cpp
+# @CYA END
     ../External/CubeMapGen/CBBoxInt32.cpp
     ../External/CubeMapGen/CBBoxInt32.h
     ../External/CubeMapGen/CCubeMapProcessor.cpp

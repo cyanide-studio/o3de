@@ -18,8 +18,11 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class InstanceEntityMapperInterface;
         class PrefabLoaderInterface;
     }
+
+    class PrefabEditorEntityOwnershipInterface;
 }
 
 namespace UnitTest
@@ -54,8 +57,10 @@ namespace UnitTest
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
         void CreateRootPrefab();
-        AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
+        void InitializeRootPrefab();
+        AZ::Entity* CreateEntity(const AZStd::string& entityName, bool shouldActivate = true);
         AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
+        AZ::EntityId CreatePrefab(const AzToolsFramework::EntityIdList& entityIds, AZ::IO::PathView filePath);
         void PropagateAllTemplateChanges();
 
         void CompareInstances(const Instance& instanceA, const Instance& instanceB, bool shouldCompareLinkIds = true,
@@ -80,8 +85,10 @@ namespace UnitTest
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        AzToolsFramework::PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
         AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 }

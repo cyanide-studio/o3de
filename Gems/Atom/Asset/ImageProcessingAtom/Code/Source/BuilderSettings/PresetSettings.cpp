@@ -43,6 +43,9 @@ namespace ImageProcessingAtom
                 ->Field("DiscardAlpha", &PresetSettings::m_discardAlpha)
                 ->Field("MaxTextureSize", &PresetSettings::m_maxTextureSize)
                 ->Field("MinTextureSize", &PresetSettings::m_minTextureSize)
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+                ->Field("HighPassMip", &PresetSettings::m_highPassMip)
+// @CYA END
                 ->Field("IsPowerOf2", &PresetSettings::m_isPowerOf2)
                 ->Field("SizeReduceLevel", &PresetSettings::m_sizeReduceLevel)
                 ->Field("GlossFromNormal", &PresetSettings::m_glossFromNormals)
@@ -202,6 +205,9 @@ namespace ImageProcessingAtom
             m_discardAlpha == other.m_discardAlpha &&
             m_minTextureSize == other.m_minTextureSize &&
             m_maxTextureSize == other.m_maxTextureSize &&
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+            m_highPassMip == other.m_highPassMip &&
+// @CYA END
             m_isPowerOf2 == other.m_isPowerOf2 &&
             m_sizeReduceLevel == other.m_sizeReduceLevel &&
             m_glossFromNormals == other.m_glossFromNormals &&
@@ -240,6 +246,9 @@ namespace ImageProcessingAtom
             m_discardAlpha = other.m_discardAlpha;
             m_minTextureSize = other.m_minTextureSize;
             m_maxTextureSize = other.m_maxTextureSize;
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+            m_highPassMip = other.m_highPassMip;
+// @CYA END
             m_isPowerOf2 = other.m_isPowerOf2;
             m_sizeReduceLevel = other.m_sizeReduceLevel;
             m_glossFromNormals = other.m_glossFromNormals;

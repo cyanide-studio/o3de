@@ -549,7 +549,7 @@ namespace EMotionFX
 
                     // Clear the old asset.
                     m_channels[channel].m_configuration.m_motionAsset.Release();
-                    m_channels[channel].m_configuration.m_motionAsset = AZ::Data::Asset<MotionAsset>(assetId, nullptr);
+                    m_channels[channel].m_configuration.m_motionAsset = AZ::Data::Asset<MotionAsset>(assetId, AZ::Uuid("{00494B8E-7578-4BA2-8B28-272E90680787}"));
 
                     // Create a new asset
                     if (assetId.IsValid())

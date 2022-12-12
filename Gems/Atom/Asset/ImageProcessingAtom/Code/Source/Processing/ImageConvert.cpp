@@ -20,7 +20,9 @@
 #include <BuilderSettings/BuilderSettingManager.h>
 #include <BuilderSettings/PresetSettings.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzCore/std/time.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <Atom/RHI.Reflect/Format.h>
 
@@ -58,6 +60,9 @@ namespace ImageProcessingAtom
         StepAverageColor,
         StepGlossFromNormal,
         StepPostNormalize,
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        StepCreateHighPass,
+// @CYA END
         StepConvertOutputColorSpace,
         StepConvertPixelFormat,
         StepSaveToFile,
@@ -76,6 +81,9 @@ namespace ImageProcessingAtom
         "AverageColor",
         "GlossFromNormal",
         "PostNormalize",
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        "CreateHighPass",
+// @CYA END
         "ConvertOutputColorSpace",
         "ConvertPixelFormat",
         "SaveToFile",
@@ -326,6 +334,14 @@ namespace ImageProcessingAtom
                 m_image->Get()->AddImageFlags(EIF_RenormalizedTexture);
             }
             break;
+// @CYA EDIT: Add HighPass step from Lumberyard's "Terrain_Albedo" preset
+        case StepCreateHighPass:
+            if (m_input->m_presetSetting.m_highPassMip > 0)
+            {
+                m_image->CreateHighPass(m_input->m_presetSetting.m_highPassMip);
+            }
+            break;
+// @CYA END
         case StepConvertOutputColorSpace:
             // convert image from linear space to desired output color space
             ConvertToOuputColorSpace();
@@ -813,7 +829,11 @@ namespace ImageProcessingAtom
             m_input->m_sourceAssetId,
             m_input->m_imageName,
             m_input->m_presetSetting.m_numResidentMips,
-            subId);
+            subId,
+// @CYA EDIT: Add tags for textures
+            m_input->m_textureSetting.m_tags
+// @CYA END
+            );
 
         if (assetProducer.BuildImageAssets())
         {
@@ -891,7 +911,7 @@ namespace ImageProcessingAtom
         desc->m_isStreaming = BuilderSettingManager::Instance()->GetBuilderSetting(platformName)->m_enableStreaming;
         desc->m_outputFolder = exportDir;
         desc->m_jobProducts = &jobProducts;
-        AzFramework::StringFunc::Path::GetFullFileName(imageFilePath.c_str(), desc->m_imageName);
+        AZ::StringFunc::Path::GetFullFileName(imageFilePath.c_str(), desc->m_imageName);
 
         // Get source asset id. Create random id if it's not found which is useful if this functions wasn't called under asset builder environment. For example, unit test.
         AZStd::string watchFolder;
@@ -920,15 +940,15 @@ namespace ImageProcessingAtom
 
         // generate export file name
         AZStd::string fileName;
-        AzFramework::StringFunc::Path::GetFileName(m_input->m_imageName.c_str(), fileName);
+        AZ::StringFunc::Path::GetFileName(m_input->m_imageName.c_str(), fileName);
         fileName += fileNameSuffix;
 
         AZStd::string extension;
-        AzFramework::StringFunc::Path::GetExtension(m_input->m_imageName.c_str(), extension);
+        AZ::StringFunc::Path::GetExtension(m_input->m_imageName.c_str(), extension);
         fileName += extension;
 
         AZStd::string outProductPath;
-        AzFramework::StringFunc::Path::Join(m_input->m_outputFolder.c_str(), fileName.c_str(), outProductPath, true, true);
+        AZ::StringFunc::Path::Join(m_input->m_outputFolder.c_str(), fileName.c_str(), outProductPath, true, true);
 
         // the diffuse irradiance cubemap is generated with a separate ImageConvertProcess
         TextureSettings textureSettings = m_input->m_textureSetting;

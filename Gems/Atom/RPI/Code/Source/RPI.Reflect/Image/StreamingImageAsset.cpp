@@ -37,22 +37,16 @@ namespace AZ
                     ->Field("m_tailMipChain", &StreamingImageAsset::m_tailMipChain)
                     ->Field("m_totalImageDataSize", &StreamingImageAsset::m_totalImageDataSize)
                     ->Field("m_averageColor", &StreamingImageAsset::m_averageColor)
+// @CYA EDIT: Add tags for textures
+                    ->Field("m_tags", &StreamingImageAsset::m_tags)
+// @CYA END
                     ;
             }
         }
-        
+
         const Data::Asset<ImageMipChainAsset>& StreamingImageAsset::GetMipChainAsset(size_t mipChainIndex) const
         {
             return m_mipChains[mipChainIndex].m_asset;
-        }
-
-        void StreamingImageAsset::ReleaseMipChainAssets()
-        {
-            // Release loaded mipChain asset
-            for (uint32_t mipChainIndex = 0; mipChainIndex < m_mipChains.size() - 1; mipChainIndex++)
-            {
-                m_mipChains[mipChainIndex].m_asset.Release();
-            }
         }
 
         const ImageMipChainAsset& StreamingImageAsset::GetTailMipChain() const
@@ -67,6 +61,11 @@ namespace AZ
 
         size_t StreamingImageAsset::GetMipChainIndex(size_t mipLevel) const
         {
+            if (mipLevel >= m_imageDescriptor.m_mipLevels)
+            {
+                AZ_Assert(false, "Input mipLevel doesn't exist");
+                mipLevel = m_imageDescriptor.m_mipLevels - 1;
+            }
             return m_mipLevelToChainIndex[mipLevel];
         }
 
@@ -137,6 +136,13 @@ namespace AZ
             return imageDescriptor;
         }
 
+// @CYA EDIT: Add tags for textures
+        const AZStd::unordered_set<AZ::Name>& StreamingImageAsset::GetTags() const
+        {
+            return m_tags;
+        }
+// @CYA END
+
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)
         {
             const ImageMipChainAsset* mipChainAsset = GetImageMipChainAsset(mip);
@@ -176,6 +182,19 @@ namespace AZ
             }
 
             return mipChainAsset;
+        }
+
+        bool StreamingImageAsset::HasFullMipChainAssets() const
+        {
+            for (const auto& mipChain : m_mipChains)
+            {
+                if (mipChain.m_asset.GetId().IsValid() && !mipChain.m_asset.GetData())
+                {
+                    // if the asset id is valid but the asset doesn't contain asset data, return false
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

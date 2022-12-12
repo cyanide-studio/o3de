@@ -16,6 +16,10 @@
 #include <BuilderSettings/PresetSettings.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
+// @CYA EDIT: Add tags for textures
+#include <Atom/RPI.Public/Image/ImageTagBus.h>
+// @CYA END
+
 namespace ImageProcessingAtomEditor
 {
     using namespace ImageProcessingAtom;
@@ -90,6 +94,23 @@ namespace ImageProcessingAtomEditor
         m_ui->resetBtn->setToolTip(QString("Reset all values to the default values for the selected texture preset."));
         m_ui->maxResLabel->setToolTip(QString("Use the maximum texture resolution regardless of the target platform specification. Use this setting for textures that feature text or other details that should be legible."));
 
+// @CYA EDIT: Add tags for textures
+        AZStd::vector<AZ::Name> textureTags;
+        AZ::RPI::ImageTagBus::BroadcastResult(textureTags, &AZ::RPI::ImageTagBus::Events::GetTags);
+
+        for (const AZ::Name& tag : textureTags)
+            m_ui->tagComboBox->addItem(tag.GetCStr());
+
+        m_ui->tagList->setSortingEnabled(true);
+
+        QString joinedTags;
+        for (const AZStd::string& tag : m_textureSetting->GetMultiplatformTextureSetting().m_tags)
+            m_ui->tagList->addItem(QString(tag.c_str()));
+
+        QObject::connect(m_ui->tagAddButton, &QPushButton::released, this, &TexturePresetSelectionWidget::OnTagAdded);
+        QObject::connect(m_ui->tagRemoveButton, &QPushButton::released, this, &TexturePresetSelectionWidget::OnTagRemoved);
+// @CYA END
+
         EditorInternalNotificationBus::Handler::BusConnect();
     }
 
@@ -129,6 +150,39 @@ namespace ImageProcessingAtomEditor
         m_presetPopup->installEventFilter(this);
         m_presetPopup->show();
     }
+
+// @CYA EDIT: Add tags for textures
+    void TexturePresetSelectionWidget::OnTagAdded()
+    {
+        QString selectedTag = m_ui->tagComboBox->currentText();
+        if (selectedTag.isEmpty())
+        {
+            return;
+        }
+
+        auto& tags = m_textureSetting->GetMultiplatformTextureSetting().m_tags;
+        if (!tags.emplace(selectedTag.toUtf8().data()).second)
+        {
+            return;
+        }
+
+        m_ui->tagList->addItem(selectedTag);
+    }
+
+    void TexturePresetSelectionWidget::OnTagRemoved()
+    {
+        QListWidgetItem* item = m_ui->tagList->currentItem();
+        if (!item)
+        {
+            return;
+        }
+
+        auto& tags = m_textureSetting->GetMultiplatformTextureSetting().m_tags;
+        tags.erase(item->text().toUtf8().data());
+
+        delete item;
+    }
+// @CYA END
 
     void TexturePresetSelectionWidget::OnEditorSettingsChanged(bool needRefresh, const AZStd::string& /*platform*/)
     {
