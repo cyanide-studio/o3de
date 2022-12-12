@@ -893,8 +893,10 @@ namespace AZ
 
             //! GetFolder
             /*! if a c-string has a beginning or ending folder put it in AZStd::string, returns if it was sucessful
-            *! EX: StringFunc::Path::GetFolder("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a) == true; a=="p4"
-            *! EX: StringFunc::Path::GetFolder("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a, true) == true; a=="Characters"
+// @CYA EDIT : fix StringFunc::GetFolder examples
+            *! EX: StringFunc::Path::GetFolder("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a, true) == true; a=="p4"
+            *! EX: StringFunc::Path::GetFolder("D:\\p4\\Main\\Source\\GameAssets\\gameinfo\\Characters\\some.xml", a, false) == true; a=="Characters"
+// @CYA END
             */
             bool GetFolder(const char* in, AZStd::string& out, bool bFirst = false);
 
