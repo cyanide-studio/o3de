@@ -177,6 +177,44 @@ namespace EMotionFX
 
             m_channels[channel].m_motionInstance = MultiMotionComponent::PlayMotionInternal(m_actorInstance, m_channels[channel].m_configuration, /*deleteOnZeroWeight*/true);
             m_lastActiveChannel = channel;
+
+            for (auto* handler : m_channels[channel].m_eventHandlers)
+            {
+                m_channels[channel].m_motionInstance->AddEventHandler(handler);
+            }
+        }
+
+        void EditorMultiMotionComponent::AddEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler)
+        {
+            if (m_channels.size() <= channel)
+                return;
+
+            if (m_channels[channel].m_motionInstance)
+                m_channels[channel].m_motionInstance->AddEventHandler(eventHandler);
+
+            m_channels[channel].m_eventHandlers.push_back(eventHandler);
+        }
+
+        void EditorMultiMotionComponent::RemoveEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler)
+        {
+            if (m_channels.size() <= channel)
+                return;
+
+            if (m_channels[channel].m_motionInstance)
+                m_channels[channel].m_motionInstance->RemoveEventHandler(eventHandler);
+
+            m_channels[channel].m_eventHandlers.erase(std::remove(m_channels[channel].m_eventHandlers.begin(), m_channels[channel].m_eventHandlers.end(), eventHandler),m_channels[channel].m_eventHandlers.end());
+        }
+
+        void EditorMultiMotionComponent::RemoveAllEventHandlers(AZ::u8 channel)
+        {
+            if (m_channels.size() <= channel)
+                return;
+
+            if (m_channels[channel].m_motionInstance)
+                m_channels[channel].m_motionInstance->RemoveAllEventHandlers();
+
+            m_channels[channel].m_eventHandlers.clear();
         }
 
         void EditorMultiMotionComponent::RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance)

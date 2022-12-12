@@ -7,6 +7,7 @@
 namespace EMotionFX
 {
     class MotionInstance;
+    class MotionInstanceEventHandler;
 
     namespace Integration
     {
@@ -35,6 +36,11 @@ namespace EMotionFX
             virtual void BlendOutTime(AZ::u8 channel, float time) = 0;
             virtual float GetBlendOutTime(AZ::u8 channel) const = 0;
             virtual void PlayMotion(AZ::u8 channel) = 0;
+
+            // Motion event handler functions
+            virtual void AddEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) = 0;
+            virtual void RemoveEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) = 0;
+            virtual void RemoveAllEventHandlers(AZ::u8 channel) = 0;
         };
         using MultiMotionComponentRequestBus = AZ::EBus<MultiMotionComponentRequests>;
     }
