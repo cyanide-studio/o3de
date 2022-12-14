@@ -17,7 +17,7 @@
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 
 // @CYA EDIT: Add tags for textures
-#include <Atom/RPI.Public/Image/ImageTagBus.h>
+#include <Atom/RPI.Public/AssetTagBus.h>
 // @CYA END
 
 namespace ImageProcessingAtomEditor

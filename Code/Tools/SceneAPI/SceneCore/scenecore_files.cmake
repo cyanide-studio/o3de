@@ -47,6 +47,9 @@ set(FILES
     DataTypes/Rules/ICoordinateSystemRule.h
     DataTypes/Rules/IClothRule.h
     DataTypes/Rules/ISkinRule.h
+# @CYA EDIT: Add tags
+    DataTypes/Rules/ITagRule.h
+# @CYA END
     Components/BehaviorComponent.h
     Components/BehaviorComponent.cpp
     Components/ExportingComponent.h

@@ -10,7 +10,10 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Image/StreamingImageController.h>
-#include <Atom/RPI.Public/Image/ImageTagBus.h>
+
+// @CYA EDIT: Add asset quality
+#include <Atom/RPI.Public/AssetTagBus.h>
+// @CYA END
 
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
@@ -145,17 +148,17 @@ namespace AZ
             
             const ImageMipChainAsset& mipChainTailAsset = imageAsset.GetTailMipChain();
 
-            ImageQuality highestMipChain = ImageQualityHighest;
+            AssetQuality highestMipChain = AssetQualityHighest;
             if (const AZStd::unordered_set<AZ::Name>& imageTags = imageAsset.GetTags(); !imageTags.empty())
             {
-                highestMipChain = ImageQualityLowest;
-                for (const AZ::Name& tag : imageAsset.GetTags())
+                highestMipChain = AssetQualityLowest;
+                for (const AZ::Name& tag : imageTags)
                 {
-                    ImageQuality tagQuality = ImageQualityHighest;
+                    AssetQuality tagQuality = AssetQualityHighest;
                     ImageTagBus::BroadcastResult(tagQuality, &ImageTagBus::Events::GetQuality, tag);
                     highestMipChain = AZStd::min(highestMipChain, tagQuality);
 
-                    ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterImageAsset, tag, imageAsset.GetId());
+                    ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterAsset, tag, imageAsset.GetId());
                 }
             }
 
@@ -170,7 +173,7 @@ namespace AZ
                 initRequest.m_descriptor = imageAsset.GetImageDescriptor();
                 initRequest.m_tailMipSlices = mipChainTailAsset.GetMipSlices();
 
-                if (highestMipChain != ImageQualityHighest)
+                if (highestMipChain != AssetQualityHighest)
                 {
                     // recompute miplevels from the current mipchain index
                     uint16_t mipmapShift = 0;

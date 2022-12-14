@@ -27,6 +27,9 @@
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+// @CYA EDIT: Add tags for meshes
+#include <SceneAPI/SceneData/Rules/TagRule.h>
+// @CYA END
 
 namespace AZ
 {
@@ -87,6 +90,12 @@ namespace AZ
                     {
                         modifiers.push_back(SceneData::TangentsRule::TYPEINFO_Uuid());
                     }
+                    // @CYA EDIT: Add tags for meshes
+                    if (existingRules.find(SceneData::TagRule::TYPEINFO_Uuid()) == existingRules.end())
+                    {
+                        modifiers.push_back(SceneData::TagRule::TYPEINFO_Uuid());
+                    }
+                    // @CYA END
                 }
                 else if (target.RTTI_IsTypeOf(DataTypes::ISkinGroup::TYPEINFO_Uuid()))
                 {

@@ -89,6 +89,16 @@ namespace AZ
             return EndCommon(result);
         }
 
+// @CYA EDIT: Add tags for textures
+        void ModelAssetCreator::AddTag(AZ::Name tag)
+        {
+            if (ValidateIsReady())
+            {
+                m_asset->m_tags.emplace(AZStd::move(tag));
+            }
+        }
+// @CYA END
+
         bool ModelAssetCreator::Clone(const Data::Asset<ModelAsset>& sourceAsset, Data::Asset<ModelAsset>& clonedResult, const Data::AssetId& cloneAssetId)
         {
             if (!sourceAsset.IsReady())
@@ -126,5 +136,6 @@ namespace AZ
 
             return creator.End(clonedResult);
         }
+
     } // namespace RPI
 } // namespace AZ

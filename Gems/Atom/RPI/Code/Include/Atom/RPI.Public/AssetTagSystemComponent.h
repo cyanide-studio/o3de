@@ -42,7 +42,7 @@ namespace AZ
 
             AZStd::vector<AZ::Name> GetTags() const override;
 
-            void RegisterAsset(AZ::Name imageTag, const Data::AssetId& assetId) override;
+            void RegisterImageAsset(AZ::Name imageTag, const Data::AssetId& assetId) override;
             void RegisterTag(AZ::Name imageTag) override;
 
             void SetQuality(const AZ::Name& imageTag, AssetQuality quality) override;
@@ -54,7 +54,7 @@ namespace AZ
             {
                 AZ_TYPE_INFO(TagData, "{CC8A5564-6A27-48A4-A143-C914C1AB50D5}");
 
-                AssetQuality quality = AssetQualityHighest;
+                AssetQuality quality = ImageQualityHighest;
                 AZStd::unordered_set<Data::AssetId> registeredImages;
             };
 

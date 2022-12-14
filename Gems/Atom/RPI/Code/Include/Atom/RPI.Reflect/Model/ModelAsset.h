@@ -76,6 +76,11 @@ namespace AZ
                 const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
                 float& distanceNormalized, AZ::Vector3& normal) const;
 
+// @CYA EDIT: Add tags for models
+            //! Returns the model tags
+            const AZStd::unordered_set<AZ::Name>& GetTags() const;
+// @CYA END
+
         private:
             // AssetData overrides...
             bool HandleAutoReload() override
@@ -118,6 +123,10 @@ namespace AZ
             ModelMaterialSlot m_fallbackSlot;
 
             AZStd::size_t CalculateTriangleCount() const;
+
+// @CYA EDIT: Add tags for textures
+            AZStd::unordered_set<AZ::Name> m_tags;
+// @CYA END
         };
 
         class ModelAssetHandler
