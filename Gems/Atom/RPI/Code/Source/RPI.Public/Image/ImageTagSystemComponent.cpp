@@ -6,9 +6,11 @@
  *
  */
 
+// @CYA EDIT: Add image tags
+
 /**
-* @file RPISystemComponent.cpp
-* @brief Contains the definition of the RPISystemComponent methods that aren't defined as inline
+* @file ImageTagSystemComponent.cpp
+* @brief Contains the definition of the ImageTagSystemComponent methods that aren't defined as inline
 */
 
 #include <Atom/RPI.Public/Image/ImageTagSystemComponent.h>
@@ -137,3 +139,5 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
+// @CYA END

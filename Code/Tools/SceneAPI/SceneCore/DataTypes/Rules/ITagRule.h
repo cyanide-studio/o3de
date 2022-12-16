@@ -1,5 +1,7 @@
 #pragma once
 
+// @CYA EDIT: Add model tags
+
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -32,3 +34,5 @@ namespace AZ
         }  // DataTypes
     }  // SceneAPI
 }  // AZ
+
+// @CYA END

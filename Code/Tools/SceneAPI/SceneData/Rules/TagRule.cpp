@@ -6,6 +6,8 @@
  *
  */
 
+// @CYA EDIT: Add model tags
+
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -50,3 +52,5 @@ namespace AZ
         } // SceneData
     } // SceneAPI
 } // AZ
+
+// @CYA END

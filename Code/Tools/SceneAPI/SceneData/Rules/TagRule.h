@@ -8,6 +8,8 @@
  *
  */
 
+// @CYA EDIT: Add model tags
+
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ITagRule.h>
@@ -43,3 +45,5 @@ namespace AZ
         } // SceneData
     } // SceneAPI
 } // AZ
+
+// @CYA END

@@ -8,6 +8,8 @@
 
 #pragma once
 
+// @CYA EDIT: Add assets tags
+
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/EBus/EBus.h>
@@ -59,3 +61,5 @@ namespace AZ
         using ModelTagNotificationBus = EBus<AssetTagNotification<ModelAsset>>;
     } // namespace RPI
 }
+
+// @CYA END

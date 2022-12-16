@@ -12,6 +12,8 @@
  */
 #pragma once
 
+// @CYA EDIT: Add model tags
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RPI.Public/AssetTagBus.h>
@@ -62,3 +64,5 @@ namespace AZ
         };
     } // namespace RPI
 } // namespace AZ
+
+// @CYA END

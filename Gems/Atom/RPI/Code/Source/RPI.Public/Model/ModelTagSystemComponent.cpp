@@ -7,9 +7,11 @@
  */
 
 /**
-* @file RPISystemComponent.cpp
-* @brief Contains the definition of the RPISystemComponent methods that aren't defined as inline
+* @file ModelTagSystemComponent.cpp
+* @brief Contains the definition of the ModelTagSystemComponent methods that aren't defined as inline
 */
+
+// @CYA EDIT: Add model tags
 
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -137,3 +139,5 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
+// @CYA END
