@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 
@@ -33,6 +34,10 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
+
+// @CYA EDIT: Add asset quality
+#include <Atom/RPI.Public/AssetQuality.h>
+// @CYA END
 
 namespace AZ
 {
@@ -486,7 +491,7 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return {RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
+                return { RPI::AssetQualityHighest, RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
         }
 

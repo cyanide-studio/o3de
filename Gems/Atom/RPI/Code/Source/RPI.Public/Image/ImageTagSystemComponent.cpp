@@ -6,9 +6,11 @@
  *
  */
 
+// @CYA EDIT: Add image tags
+
 /**
-* @file RPISystemComponent.cpp
-* @brief Contains the definition of the RPISystemComponent methods that aren't defined as inline
+* @file ImageTagSystemComponent.cpp
+* @brief Contains the definition of the ImageTagSystemComponent methods that aren't defined as inline
 */
 
 #include <Atom/RPI.Public/Image/ImageTagSystemComponent.h>
@@ -47,7 +49,7 @@ namespace AZ
 
         void ImageTagSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC_CE("TextureTagSystemComponent"));
+            provided.push_back(AZ_CRC_CE("ImageTagSystemComponent"));
         }
 
         void ImageTagSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
@@ -64,13 +66,13 @@ namespace AZ
             ImageTagBus::Handler::BusDisconnect();
         }
 
-        ImageQuality ImageTagSystemComponent::GetQuality(const AZ::Name& imageTag) const
+        AssetQuality ImageTagSystemComponent::GetQuality(const AZ::Name& imageTag) const
         {
             auto it = m_imageTags.find(imageTag);
             if (it == m_imageTags.end())
             {
                 AZ_Warning("ImageTagSystemComponent", false, "Image tag %s has not been registered", imageTag.GetCStr());
-                return ImageQualityHighest;
+                return AssetQualityHighest;
             }
 
             return it->second.quality;
@@ -89,7 +91,7 @@ namespace AZ
             return tags;
         }
 
-        void ImageTagSystemComponent::RegisterImageAsset(AZ::Name imageTag, const Data::AssetId& assetId)
+        void ImageTagSystemComponent::RegisterAsset(AZ::Name imageTag, const Data::AssetId& assetId)
         {
             auto it = m_imageTags.find(imageTag);
             if (it == m_imageTags.end())
@@ -109,7 +111,7 @@ namespace AZ
             m_imageTags.emplace(AZStd::move(imageTag), TagData{});
         }
 
-        void ImageTagSystemComponent::SetQuality(const AZ::Name& imageTag, ImageQuality quality)
+        void ImageTagSystemComponent::SetQuality(const AZ::Name& imageTag, AssetQuality quality)
         {
             auto it = m_imageTags.find(imageTag);
             if (it == m_imageTags.end())
@@ -119,7 +121,13 @@ namespace AZ
             }
 
             TagData& tagData = it->second;
+            if (tagData.quality == quality)
+            {
+                return;
+            }
+
             tagData.quality = quality;
+            ImageTagNotificationBus::Event(imageTag, &AssetTagNotification<ImageAsset>::template OnAssetTagQualityUpdated, quality);
 
             for (const AZ::Data::AssetId& assetId : tagData.registeredImages)
             {
@@ -131,3 +139,5 @@ namespace AZ
         }
     } // namespace RPI
 } // namespace AZ
+
+// @CYA END

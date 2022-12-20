@@ -10,8 +10,6 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Image/StreamingImageController.h>
-#include <Atom/RPI.Public/Image/ImageTagBus.h>
-
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 
@@ -145,46 +143,11 @@ namespace AZ
             
             const ImageMipChainAsset& mipChainTailAsset = imageAsset.GetTailMipChain();
 
-            ImageQuality highestMipChain = ImageQualityHighest;
-            if (const AZStd::unordered_set<AZ::Name>& imageTags = imageAsset.GetTags(); !imageTags.empty())
-            {
-                highestMipChain = ImageQualityLowest;
-                for (const AZ::Name& tag : imageAsset.GetTags())
-                {
-                    ImageQuality tagQuality = ImageQualityHighest;
-                    ImageTagBus::BroadcastResult(tagQuality, &ImageTagBus::Events::GetQuality, tag);
-                    highestMipChain = AZStd::min(highestMipChain, tagQuality);
-
-                    ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterImageAsset, tag, imageAsset.GetId());
-                }
-            }
-
-            if (highestMipChain >= imageAsset.GetMipChainCount())
-                highestMipChain = aznumeric_caster(imageAsset.GetMipChainCount() - 1);
-
-            m_firstActiveMipChainIndex = highestMipChain;
-
             {
                 RHI::StreamingImageInitRequest initRequest;
                 initRequest.m_image = GetRHIImage();
                 initRequest.m_descriptor = imageAsset.GetImageDescriptor();
                 initRequest.m_tailMipSlices = mipChainTailAsset.GetMipSlices();
-
-                if (highestMipChain != ImageQualityHighest)
-                {
-                    // recompute miplevels from the current mipchain index
-                    uint16_t mipmapShift = 0;
-                    for (size_t i = 0; i < highestMipChain; ++i)
-                    {
-                        uint16_t mipCount = aznumeric_cast<uint16_t>(imageAsset.GetMipCount(i));
-
-                        mipmapShift += mipCount;
-                    }
-
-                    AZ_Error("Image", mipmapShift < initRequest.m_descriptor.m_mipLevels, "Unexpected mipmap shift");
-                    initRequest.m_descriptor.m_mipLevels -= mipmapShift;
-                    initRequest.m_descriptor.m_size = initRequest.m_descriptor.m_size.GetReducedMip(mipmapShift);
-                }
 
                 // NOTE: Initialization can fail due to out-of-memory errors. Need to handle it at runtime.
                 resultCode = rhiPool->InitImage(initRequest);
@@ -206,10 +169,7 @@ namespace AZ
 
                     // We want to store off the id, not the AssetData instance. This simplifies the fetch / evict logic which
                     // can do more strict assertions.
-                    if (mipChainIndex >= highestMipChain)
-                        m_mipChains.push_back(Data::Asset<ImageMipChainAsset>(assetId, azrtti_typeid<ImageMipChainAsset>()));
-                    else
-                        m_mipChains.push_back(Data::Asset<ImageMipChainAsset>{});
+                    m_mipChains.push_back(Data::Asset<ImageMipChainAsset>(assetId, azrtti_typeid<ImageMipChainAsset>()));
                 }
 
                 // Initialize the streaming state to have the tail mip active and ready.
@@ -362,8 +322,6 @@ namespace AZ
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded number of mip chains.");
 
-            mipChainIndex = AZStd::max(mipChainIndex, m_firstActiveMipChainIndex);
-
             // Expand operation - queue streaming of mip chains up to target mip chain index. 
             if (m_mipChainState.m_streamingTarget > mipChainIndex)
             {
@@ -466,7 +424,6 @@ namespace AZ
         void StreamingImage::FetchMipChainAsset(size_t mipChainIndex)
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded total number of mip chains.");
-            AZ_Assert(mipChainIndex >= m_firstActiveMipChainIndex, "Trying to fetch disabled mipchain index.");
 
             const uint16_t mipChainBit = static_cast<uint16_t>(1 << mipChainIndex);
 

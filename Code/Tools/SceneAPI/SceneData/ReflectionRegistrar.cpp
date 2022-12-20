@@ -21,6 +21,9 @@
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+// @CYA EDIT: Add tags for meshes
+#include <SceneAPI/SceneData/Rules/TagRule.h>
+// @CYA END
 
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
 
@@ -73,6 +76,9 @@ namespace AZ
             SceneData::SkinMeshAdvancedRule::Reflect(context);
             SceneData::TangentsRule::Reflect(context);
             SceneData::CoordinateSystemRule::Reflect(context);
+// @CYA EDIT: Add tags for meshes
+            SceneData::TagRule::Reflect(context);
+// @CYA END
 
             // Utility
             SceneData::SceneNodeSelectionList::Reflect(context);

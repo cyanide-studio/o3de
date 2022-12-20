@@ -28,6 +28,11 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 
+// @CYA EDIT: Add asset quality
+#include <Atom/RPI.Public/AssetQuality.h>
+#include <Atom/RPI.Public/AssetTagBus.h>
+// @CYA END
+
 namespace AZ
 {
     namespace Render
@@ -53,6 +58,9 @@ namespace AZ
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
+// @CYA EDIT: Add asset quality
+            RPI::AssetQuality m_qualityLevel = RPI::AssetQualityHighest;
+// @CYA END
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
@@ -68,6 +76,8 @@ namespace AZ
             , private TransformNotificationBus::Handler
             , private MaterialConsumerRequestBus::Handler
             , private MaterialComponentNotificationBus::Handler
+        // @CYA EDIT: Add asset quality
+            , private RPI::ModelTagNotificationBus::MultiHandler
         {
         public:
             friend class EditorMeshComponent;
@@ -164,6 +174,12 @@ namespace AZ
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
+
+// @CYA EDIT: Add asset quality
+            void OnAssetTagQualityUpdated(RPI::AssetQuality quality) override;
+
+            void RecomputeAssetQuality();
+// @CYA END
 
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;

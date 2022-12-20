@@ -8,6 +8,8 @@
 
 set(FILES
     Include/Atom/RPI.Public/AssetInitBus.h
+    Include/Atom/RPI.Public/AssetQuality.h
+    Include/Atom/RPI.Public/AssetTagBus.h
     Include/Atom/RPI.Public/Base.h
     Include/Atom/RPI.Public/BlockCompression.h
     Include/Atom/RPI.Public/Culling.h
@@ -46,7 +48,6 @@ set(FILES
     Include/Atom/RPI.Public/Image/AttachmentImagePool.h
     Include/Atom/RPI.Public/Image/ImageSystem.h
     Include/Atom/RPI.Public/Image/ImageSystemInterface.h
-    Include/Atom/RPI.Public/Image/ImageTagBus.h
     Include/Atom/RPI.Public/Image/ImageTagSystemComponent.h
     Include/Atom/RPI.Public/Image/StreamingImage.h
     Include/Atom/RPI.Public/Image/StreamingImageContext.h
@@ -59,6 +60,7 @@ set(FILES
     Include/Atom/RPI.Public/Model/ModelLod.h
     Include/Atom/RPI.Public/Model/ModelLodUtils.h
     Include/Atom/RPI.Public/Model/ModelSystem.h
+    Include/Atom/RPI.Public/Model/ModelTagSystemComponent.h
     Include/Atom/RPI.Public/Model/UvStreamTangentBitmask.h
     Include/Atom/RPI.Public/Pass/AttachmentReadback.h
     Include/Atom/RPI.Public/Pass/ComputePass.h
@@ -140,6 +142,7 @@ set(FILES
     Source/RPI.Public/Model/ModelLod.cpp
     Source/RPI.Public/Model/ModelLodUtils.cpp
     Source/RPI.Public/Model/ModelSystem.cpp
+    Source/RPI.Public/Model/ModelTagSystemComponent.cpp
     Source/RPI.Public/Model/UvStreamTangentBitmask.cpp
     Source/RPI.Public/Pass/AttachmentReadback.cpp
     Source/RPI.Public/Pass/ComputePass.cpp

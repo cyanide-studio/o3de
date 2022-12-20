@@ -67,6 +67,10 @@ set(FILES
     Rules/SkinMeshAdvancedRule.cpp
     Rules/SkinRule.h
     Rules/SkinRule.cpp
+# @CYA EDIT: Add rule for models
+    Rules/TagRule.h
+    Rules/TagRule.cpp
+# @CYA END
     Rules/TangentsRule.h
     Rules/TangentsRule.cpp
     GraphData/CustomPropertyData.h

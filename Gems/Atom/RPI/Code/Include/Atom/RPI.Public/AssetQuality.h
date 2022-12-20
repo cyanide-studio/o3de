@@ -14,9 +14,9 @@ namespace AZ
 {
     namespace RPI
     {
-        using ImageQuality = u32;
+        using AssetQuality = u32;
 
-        constexpr ImageQuality ImageQualityHighest = 0;
-        constexpr ImageQuality ImageQualityLowest = 0xFFFFFFFF;
+        constexpr AssetQuality AssetQualityHighest = 0;
+        constexpr AssetQuality AssetQualityLowest = 0xFFFFFFFF;
     }
 }

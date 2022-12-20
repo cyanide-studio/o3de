@@ -212,10 +212,6 @@ namespace AZ
 
             // The image's streaming priority
             Priority m_streamingPriority = 0; // value 0 means lowest priority
-
-// @CYA EDIT: Add tags for textures
-            size_t m_firstActiveMipChainIndex = 0;
-// @CYA END
         };
     }
 }

@@ -7,10 +7,12 @@
  */
 
 /**
- * @file TextureTagSystemComponent.h
- * @brief Contains the definition of the TextureTagSystemComponent that will allow to set all texture tags
+ * @file ModelTagSystemComponent.h
+ * @brief Contains the definition of the ModelTagSystemComponent that will allow to set all texture tags
  */
 #pragma once
+
+// @CYA EDIT: Add model tags
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -20,45 +22,47 @@ namespace AZ
 {
     namespace RPI
     {
-        class ImageTagSystemComponent final
+        class ModelTagSystemComponent final
             : public AZ::Component
-            , ImageTagBus::Handler
+            , ModelTagBus::Handler
         {
         public:
-            AZ_COMPONENT(ImageTagSystemComponent, "{1AC446A3-6F20-4D5C-9C09-BB034C9188D5}");
+            AZ_COMPONENT(ModelTagSystemComponent, "{93D69578-C521-43BC-ADAE-230DB09B361C}");
 
             static void Reflect(AZ::ReflectContext* context);
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-            ImageTagSystemComponent() = default;
-            ~ImageTagSystemComponent() override;
+            ModelTagSystemComponent() = default;
+            ~ModelTagSystemComponent() override;
 
             void Activate() override;
             void Deactivate() override;
 
-            AssetQuality GetQuality(const AZ::Name& imageTag) const override;
+            AssetQuality GetQuality(const AZ::Name& modelTag) const override;
 
             AZStd::vector<AZ::Name> GetTags() const override;
 
-            void RegisterAsset(AZ::Name imageTag, const Data::AssetId& assetId) override;
-            void RegisterTag(AZ::Name imageTag) override;
+            void RegisterAsset(AZ::Name modelTag, const Data::AssetId& assetId) override;
+            void RegisterTag(AZ::Name modelTag) override;
 
-            void SetQuality(const AZ::Name& imageTag, AssetQuality quality) override;
+            void SetQuality(const AZ::Name& modelTag, AssetQuality quality) override;
 
         private:
-            ImageTagSystemComponent(const ImageTagSystemComponent&) = delete;
+            ModelTagSystemComponent(const ModelTagSystemComponent&) = delete;
 
             struct TagData
             {
-                AZ_TYPE_INFO(TagData, "{CC8A5564-6A27-48A4-A143-C914C1AB50D5}");
+                AZ_TYPE_INFO(TagData, "{8E452207-BA4F-4A08-BFD8-8A23757B8BAD}");
 
                 AssetQuality quality = AssetQualityHighest;
-                AZStd::unordered_set<Data::AssetId> registeredImages;
+                AZStd::unordered_set<Data::AssetId> registeredModels;
             };
 
-            AZStd::unordered_map<AZ::Name, TagData> m_imageTags;
+            AZStd::unordered_map<AZ::Name, TagData> m_modelTags;
         };
     } // namespace RPI
 } // namespace AZ
+
+// @CYA END

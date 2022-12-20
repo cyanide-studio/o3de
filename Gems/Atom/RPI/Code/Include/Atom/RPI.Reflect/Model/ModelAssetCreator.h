@@ -40,6 +40,10 @@ namespace AZ
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.
             bool End(Data::Asset<ModelAsset>& result);
+            
+// @CYA EDIT: Add tags for textures
+            void AddTag(AZ::Name tag);
+// @CYA END
 
             //! Clone the given source model asset.
             //! @param sourceAsset The source model asset to clone.
