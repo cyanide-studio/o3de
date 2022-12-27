@@ -108,6 +108,8 @@ namespace AZ
 // @CYA EDIT: Add tags for textures
             //! Returns the image tags
             const AZStd::unordered_set<AZ::Name>& GetTags() const;
+
+            void RemoveFrontMipchains(size_t mipChainLevel);
 // @CYA END
 
         private:
