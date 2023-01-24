@@ -25,6 +25,8 @@ namespace AZ
             : public AZ::EBusTraits
         {
         public:
+            using MutexType = AZStd::recursive_mutex;
+
             virtual AssetQuality GetQuality(const AZ::Name& assetTag) const = 0;
 
             virtual AZStd::vector<AZ::Name> GetTags() const = 0;
