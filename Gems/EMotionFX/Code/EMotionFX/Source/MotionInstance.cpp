@@ -53,8 +53,8 @@ namespace EMotionFX
 
         m_eventHandlersByEventType.resize(EVENT_TYPE_MOTION_INSTANCE_LAST_EVENT - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT + 1);
 // @CYA EDIT:
-        m_eventHandlers.resize(EVENT_TYPE_MOTION_INSTANCE_LAST_EVENT - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT + 1);
-// @CYA END
+        m_eventHandlersByEventTypeNextFrame.resize(EVENT_TYPE_MOTION_INSTANCE_LAST_EVENT - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT + 1);
+        // @CYA END
         GetEventManager().OnCreateMotionInstance(this);
     }
 
@@ -366,7 +366,7 @@ namespace EMotionFX
         {
             // clone event handlers for the frame
             AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
-            m_eventHandlersByEventType = m_eventHandlers;
+            m_eventHandlersByEventType = m_eventHandlersByEventTypeNextFrame;
         }
 // @CYA END
 
@@ -652,9 +652,9 @@ namespace EMotionFX
         AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
         {
-            AZ_Assert(AZStd::find(m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].begin(), m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(), eventHandler) == m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(),
+            AZ_Assert(AZStd::find(m_eventHandlersByEventTypeNextFrame[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].begin(), m_eventHandlersByEventTypeNextFrame[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(), eventHandler) == m_eventHandlersByEventTypeNextFrame[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].end(),
                 "Event handler already added to manager");
-            m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].emplace_back(eventHandler);
+            m_eventHandlersByEventTypeNextFrame[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT].emplace_back(eventHandler);
         }
 // @CYA END
     }
@@ -666,7 +666,7 @@ namespace EMotionFX
         AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
         for (const EventTypes eventType : eventHandler->GetHandledEventTypes())
         {
-            EventHandlerVector& eventHandlers = m_eventHandlers[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
+            EventHandlerVector& eventHandlers = m_eventHandlersByEventTypeNextFrame[eventType - EVENT_TYPE_MOTION_INSTANCE_FIRST_EVENT];
             eventHandlers.erase(AZStd::remove(eventHandlers.begin(), eventHandlers.end(), eventHandler), eventHandlers.end());
         }
 // @CYA END
@@ -678,13 +678,13 @@ namespace EMotionFX
 // @CYA EDIT : Add cache system to allow vector edition in multi-thread context to avoid to edit the frame readed vector
         AZStd::unique_lock<AZStd::mutex> lk(m_eventsMutex);
 #ifdef AZ_DEBUG_BUILD
-        for (const EventHandlerVector& eventHandlers : m_eventHandlers)
+        for (const EventHandlerVector& eventHandlers : m_eventHandlersByEventTypeNextFrame)
         {
             AZ_Assert(eventHandlers.empty(), "Expected all event handlers to be removed");
         }
 #endif
-        m_eventHandlers.clear();
-// @CYA END
+        m_eventHandlersByEventTypeNextFrame.clear();
+        // @CYA END
     }
 
     //--------------------

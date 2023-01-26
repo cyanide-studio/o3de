@@ -888,7 +888,7 @@ namespace EMotionFX
         AZStd::vector<EventHandlerVector> m_eventHandlersByEventType; /**< The event handler to use to process events organized by EventTypes. */
 // @CYA EDIT: Add cache system to allow vector edition in multi-thread context to avoid to edit the frame readed vector
         AZStd::mutex m_eventsMutex;
-        AZStd::vector<EventHandlerVector> m_eventHandlers; /**< The event handler to use to process events organized by EventTypes. */
+        AZStd::vector<EventHandlerVector> m_eventHandlersByEventTypeNextFrame; /**< The next frame event handler cache to use to process events organized by EventTypes. */
 // @CYA END
         float               m_currentTime = 0.0f;           /**< The current playtime. */
         float               m_timeDiffToEnd = 0.0f;         /**< The time it takes until we reach the loop point in the motion. This also takes the playback direction into account (backward or forward play). */
