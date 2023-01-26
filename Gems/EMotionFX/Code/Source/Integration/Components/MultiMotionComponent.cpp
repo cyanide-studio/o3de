@@ -344,17 +344,6 @@ namespace EMotionFX
             m_channels[channel].m_eventHandlers.erase(std::remove(m_channels[channel].m_eventHandlers.begin(), m_channels[channel].m_eventHandlers.end(), eventHandler), m_channels[channel].m_eventHandlers.end());
         }
 
-        void MultiMotionComponent::RemoveAllEventHandlers(AZ::u8 channel)
-        {
-            if (m_channels.size() <= channel)
-                return;
-
-            if (m_channels[channel].m_motionInstance)
-                m_channels[channel].m_motionInstance->RemoveAllEventHandlers();
-
-            m_channels[channel].m_eventHandlers.clear();
-        }
-
         void MultiMotionComponent::RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance)
         {
             if (motionInstance)

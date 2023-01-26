@@ -190,14 +190,6 @@ namespace EMotionFX
 
             m_eventHandlers.erase(std::remove(m_eventHandlers.begin(), m_eventHandlers.end(), eventHandler), m_eventHandlers.end());
         }
-
-        void EditorSimpleMotionComponent::RemoveAllEventHandlers()
-        {
-            if (m_motionInstance)
-                m_motionInstance->RemoveAllEventHandlers();
-
-            m_eventHandlers.clear();
-        }
 // @CYA END
 
         void EditorSimpleMotionComponent::RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance)

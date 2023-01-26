@@ -86,7 +86,6 @@ namespace EMotionFX
             void PlayMotion() override { PlayMotion(GetLastActiveChannel()); }
             void AddEventHandler(MotionInstanceEventHandler* eventHandler) override { AddEventHandler(GetLastActiveChannel(), eventHandler); }
             void RemoveEventHandler(MotionInstanceEventHandler* eventHandler) override { RemoveEventHandler(GetLastActiveChannel(), eventHandler); }
-            void RemoveAllEventHandlers() override { RemoveAllEventHandlers(GetLastActiveChannel()); }
 
             // MultiMotionComponentRequestBus::Handler
             AZ::u32 GetChannelsCount() const override;
@@ -109,7 +108,6 @@ namespace EMotionFX
             void PlayMotion(AZ::u8 channel) override;
             void AddEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) override;
             void RemoveEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) override;
-            void RemoveAllEventHandlers(AZ::u8 channel) override;
 
             // EditorSimpleMotionComponentRequestBus::Handler
             void SetPreviewInEditor(bool enable) override;

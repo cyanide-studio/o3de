@@ -68,7 +68,7 @@ namespace EMotionFX
                 EMotionFX::MotionInstance*                  m_motionInstance;       ///< Motion to play on the actor
                 AZ::Data::Asset<MotionAsset>                m_lastMotionAsset;      ///< Last active motion asset, kept alive for blending.
                 EMotionFX::MotionInstance*                  m_lastMotionInstance;   ///< Last active motion instance, kept alive for blending.
-                AZStd::vector<MotionInstanceEventHandler*>  m_eventHandlers;        ///< Motion events list
+                AZStd::vector<MotionInstanceEventHandler*>  m_eventHandlers;        ///< Save motion events list for when there is no motion instance
 
                 static void Reflect(AZ::ReflectContext* context);
             };
@@ -122,7 +122,6 @@ namespace EMotionFX
             void PlayMotion() override { PlayMotion(GetLastActiveChannel()); }
             void AddEventHandler(MotionInstanceEventHandler* eventHandler) override { AddEventHandler(GetLastActiveChannel(), eventHandler); }
             void RemoveEventHandler(MotionInstanceEventHandler* eventHandler) override { RemoveEventHandler(GetLastActiveChannel(), eventHandler); }
-            void RemoveAllEventHandlers() override { RemoveAllEventHandlers(GetLastActiveChannel()); }
 
             // MultiMotionComponentRequestBus::Handler
             AZ::u32 GetChannelsCount() const override;
@@ -145,7 +144,6 @@ namespace EMotionFX
             void PlayMotion(AZ::u8 channel) override;
             void AddEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) override;
             void RemoveEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) override;
-            void RemoveAllEventHandlers(AZ::u8 channel) override;
 
             const EMotionFX::MotionInstance* GetMotionInstance(AZ::u8 channel);
             void SetMotionAssetId(AZ::u8 channel, const AZ::Data::AssetId& assetId);

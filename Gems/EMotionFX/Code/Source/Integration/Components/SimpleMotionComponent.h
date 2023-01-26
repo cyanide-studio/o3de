@@ -111,7 +111,6 @@ namespace EMotionFX
 // @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
             void AddEventHandler(MotionInstanceEventHandler* eventHandler) override;
             void RemoveEventHandler(MotionInstanceEventHandler* eventHandler) override;
-            void RemoveAllEventHandlers() override;
 // @CYA END
 
             const EMotionFX::MotionInstance* GetMotionInstance();
@@ -136,7 +135,7 @@ namespace EMotionFX
             AZ::Data::Asset<MotionAsset>                m_lastMotionAsset;      ///< Last active motion asset, kept alive for blending.
             EMotionFX::MotionInstance*                  m_lastMotionInstance;   ///< Last active motion instance, kept alive for blending.
 // @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
-            AZStd::vector<MotionInstanceEventHandler*>  m_eventHandlers;        ///< Motion events list
+            AZStd::vector<MotionInstanceEventHandler*>  m_eventHandlers;        ///< Save motion events list for when there is no motion instance
 // @CYA END
         };
     } // namespace Integration

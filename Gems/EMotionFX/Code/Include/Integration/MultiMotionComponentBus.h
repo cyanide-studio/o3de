@@ -40,7 +40,6 @@ namespace EMotionFX
             // Motion event handler functions
             virtual void AddEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) = 0;
             virtual void RemoveEventHandler(AZ::u8 channel, MotionInstanceEventHandler* eventHandler) = 0;
-            virtual void RemoveAllEventHandlers(AZ::u8 channel) = 0;
         };
         using MultiMotionComponentRequestBus = AZ::EBus<MultiMotionComponentRequests>;
     }
