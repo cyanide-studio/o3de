@@ -646,7 +646,8 @@ namespace AzToolsFramework
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
         AZStd::string iconPath;
-        EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetDefaultComponentEditorIcon);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+            iconPath, &AzToolsFramework::EditorRequests::Bus::Events::GetDefaultComponentEditorIcon);
         GetHeader()->SetIcon(QIcon(iconPath.c_str()));
     }
 
@@ -669,7 +670,8 @@ namespace AzToolsFramework
         }
 
         AZ::ComponentDescriptor* componentDescriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(componentDescriptor, thisComponent->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+        AZ::ComponentDescriptorBus::EventResult(
+            componentDescriptor, thisComponent->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
         if (!componentDescriptor)
         {
@@ -704,7 +706,8 @@ namespace AzToolsFramework
                 }
 
                 AZ::ComponentDescriptor* otherDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(otherDescriptor, otherComponent->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+                AZ::ComponentDescriptorBus::EventResult(
+                    otherDescriptor, otherComponent->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
                 if (otherDescriptor)
                 {
@@ -924,21 +927,15 @@ namespace AzToolsFramework
 
     void ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        // disable all component cards not matching the ComponentMode type
-        if (AZStd::find(
-            componentModeTypes.begin(),
-            componentModeTypes.end(), m_componentType) == componentModeTypes.end())
+        if (AZStd::find(componentModeTypes.begin(), componentModeTypes.end(), m_componentType) == componentModeTypes.end())
         {
+            // disable all component cards that aren't in the active component mode.
             SetWidgetInteractEnabled(this, false);
         }
-        else
-        {
-            if (!componentModeTypes.empty())
-            {
-                // only set the first item to be selected/highlighted
-                SetSelected(componentModeTypes.front() == m_componentType);
-            }
-        }
+
+        // for components that *are* in the active component mode, try to set the first one
+        // to selected, and the rest to unselected.
+        SetSelected(componentModeTypes.front() == m_componentType);
     }
 
     void ComponentEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)

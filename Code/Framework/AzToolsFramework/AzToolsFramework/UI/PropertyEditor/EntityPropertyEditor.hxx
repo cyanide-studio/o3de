@@ -61,6 +61,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
@@ -119,7 +120,7 @@ namespace AzToolsFramework
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         , public EditorInspectorComponentNotificationBus::MultiHandler
-        , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
         , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
@@ -231,8 +232,10 @@ namespace AzToolsFramework
         void OnContextReset() override;
         //////////////////////////////////////////////////////////////////////////
 
+        // PropertyEditorEntityChangeNotificationBus overrides ...
         void OnEntityComponentPropertyChanged(AZ::ComponentId /*componentId*/) override;
 
+        // EditorInspectorComponentNotificationBus overides ...
         void OnComponentOrderChanged() override;
 
         //////////////////////////////////////////////////////////////////////////
@@ -245,24 +248,24 @@ namespace AzToolsFramework
         void OnEntityStartStatusChanged(const AZ::EntityId& entityId) override;
         //////////////////////////////////////////////////////////////////////////
 
-        // EditorComponentModeNotificationBus
-        void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
-
         // ViewportEditorModeNotificationsBus overrides ...
         void OnEditorModeActivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
-        // EntityPropertEditorRequestBus
+        // EditorComponentModeNotificationBus overrides ...
+        void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
+
+        // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
 
-        // TickBus
+        // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // EditorWindowRequestBus overrides
+        // EditorWindowRequestBus overrides ...
         void SetEditorUiEnabled(bool enable) override;
 
         // ReadOnlyEntityPublicNotificationBus overrides ...
@@ -399,6 +402,8 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
         QAction* m_resetToSliceAction = nullptr;
+
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();
@@ -657,8 +662,6 @@ namespace AzToolsFramework
         QPixmap m_reorderRowImage;
         float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
-
-        AzToolsFramework::ComponentModeCollectionInterface* m_componentModeCollection = nullptr;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed

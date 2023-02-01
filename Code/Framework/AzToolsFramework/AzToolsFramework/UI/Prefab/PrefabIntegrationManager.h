@@ -10,7 +10,6 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
@@ -28,6 +27,7 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class HotKeyManagerInterface;
     class ContainerEntityInterface;
     class ReadOnlyEntityPublicInterface;
     class ToolBarManagerInterface;
@@ -37,6 +37,7 @@ namespace AzToolsFramework
         class PrefabFocusInterface;
         class PrefabFocusPublicInterface;
         class PrefabLoaderInterface;
+        class PrefabOverridePublicInterface;
         class PrefabPublicInterface;
 
         class PrefabIntegrationManager final
@@ -119,6 +120,7 @@ namespace AzToolsFramework
             void ContextMenu_Duplicate();
             void ContextMenu_DeleteSelected();
             void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
+            void ContextMenu_RevertOverrides(AZ::EntityId entityId);
 
             // Shortcut setup handlers (for legacy action manager)
             void InitializeShortcuts();
@@ -148,6 +150,8 @@ namespace AzToolsFramework
             static PrefabPublicInterface* s_prefabPublicInterface;
 
             ActionManagerInterface* m_actionManagerInterface = nullptr;
+            HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
+            PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
             ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
         };

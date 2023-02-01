@@ -82,7 +82,12 @@ namespace AZ
             //If xr system is registered with RPI init xr instance
             if (m_xrSystem)
             {
-                [[maybe_unused]] AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                // Fail result code can happen if no compatible device is attached. UnRegister xr system if that happens
+                if (resultCode == AZ::RHI::ResultCode::Fail)
+                {
+                    UnregisterXRSystem();
+                }
                 AZ_Warning("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System");
             }
 
@@ -374,7 +379,6 @@ namespace AZ
         {
             if (m_systemAssetsInitialized)
             {
-                AZ_Warning("RPISystem", false , "InitializeSystemAssets should only be called once'");
                 return;
             }
 
@@ -384,6 +388,7 @@ namespace AZ
                 AZ_Error("RPI system", false, "Failed to load RPI system asset %s", m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
+
             m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
             if (!m_sceneSrgLayout)
             {

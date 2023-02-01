@@ -21,7 +21,6 @@
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <Editor/EditorClassConverters.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <Source/BoxColliderComponent.h>
@@ -106,7 +105,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorProxyShapeConfig>()
-                ->Version(2, &PhysX::ClassConverters::EditorProxyShapeConfigVersionConverter)
+                ->Version(1)
                 ->Field("ShapeType", &EditorProxyShapeConfig::m_shapeType)
                 ->Field("Sphere", &EditorProxyShapeConfig::m_sphere)
                 ->Field("Box", &EditorProxyShapeConfig::m_box)
@@ -202,33 +201,8 @@ namespace PhysX
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Deprecate old separate components
-            serializeContext->ClassDeprecate(
-                "EditorCapsuleColliderComponent",
-                AZ::Uuid("{0BD5AF3A-35C0-4386-9930-54A2A3E97432}"),
-                &ClassConverters::DeprecateEditorCapsuleColliderComponent)
-                ;
-
-            serializeContext->ClassDeprecate(
-                "EditorBoxColliderComponent",
-                AZ::Uuid("{FAECF2BE-625B-469D-BBFF-E345BBB12D66}"),
-                &ClassConverters::DeprecateEditorBoxColliderComponent)
-                ;
-
-            serializeContext->ClassDeprecate(
-                "EditorSphereColliderComponent",
-                AZ::Uuid("{D11C1624-4AE9-4B66-A6F6-40EDB9CDCE99}"),
-                &ClassConverters::DeprecateEditorSphereColliderComponent)
-                ;
-
-            serializeContext->ClassDeprecate(
-                "EditorMeshColliderComponent",
-                AZ::Uuid("{214185DA-ABD9-4410-9819-7C177801CF7A}"),
-                &ClassConverters::DeprecateEditorMeshColliderComponent)
-                ;
-
             serializeContext->Class<EditorColliderComponent, EditorComponentBase>()
-                ->Version(9, &PhysX::ClassConverters::UpgradeEditorColliderComponent)
+                ->Version(1 + (1<<PX_PHYSICS_VERSION_MAJOR)) // Use PhysX version to trigger prefabs recompilation when switching between PhysX 4 and 5.
                 ->Field("ColliderConfiguration", &EditorColliderComponent::m_configuration)
                 ->Field("ShapeConfiguration", &EditorColliderComponent::m_shapeConfiguration)
                 ->Field("DebugDrawSettings", &EditorColliderComponent::m_colliderDebugDraw)
@@ -293,6 +267,14 @@ namespace PhysX
         // Scale the collider offset
         Physics::ColliderConfiguration colliderConfiguration = m_configuration;
         colliderConfiguration.m_position *= Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale;
+        return colliderConfiguration;
+    }
+
+    Physics::ColliderConfiguration EditorColliderComponent::GetColliderConfigurationNoOffset() const
+    {
+        Physics::ColliderConfiguration colliderConfiguration = m_configuration;
+        colliderConfiguration.m_position = AZ::Vector3::CreateZero();
+        colliderConfiguration.m_rotation = AZ::Quaternion::CreateIdentity();
         return colliderConfiguration;
     }
 
@@ -421,6 +403,8 @@ namespace PhysX
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
         ColliderShapeRequestBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
         EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
@@ -477,6 +461,7 @@ namespace PhysX
         EditorColliderComponentRequestBus::Handler::BusDisconnect();
         AZ::Render::MeshComponentNotificationBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         PhysX::MeshColliderComponentRequestsBus::Handler::BusDisconnect();
@@ -609,9 +594,9 @@ namespace PhysX
                 GetEntity()->GetName().c_str());
             break;
         case Physics::ShapeType::Cylinder:
-            colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
-            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
-                sharedColliderConfig, AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_shapeConfiguration.m_cylinder.m_configuration)) });
+            UpdateCylinderCookedMesh();
+            buildGameEntityScaledPrimitive(
+                sharedColliderConfig, m_shapeConfiguration.m_cylinder.m_configuration, m_shapeConfiguration.m_subdivisionLevel);
             break;
         case Physics::ShapeType::CookedMesh:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
@@ -648,7 +633,7 @@ namespace PhysX
 
     bool IsNonUniformlyScaledPrimitive(const EditorProxyShapeConfig& shapeConfig)
     {
-        return shapeConfig.m_hasNonUniformScale && Utils::IsPrimitiveShape(shapeConfig.GetCurrent());
+        return shapeConfig.m_hasNonUniformScale && (Utils::IsPrimitiveShape(shapeConfig.GetCurrent()) || shapeConfig.IsCylinderConfig());
     }
 
     void EditorColliderComponent::CreateStaticEditorCollider()
@@ -694,7 +679,7 @@ namespace PhysX
                 GetColliderConfigurationScaled());
             AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = m_shapeConfiguration.CloneCurrent();
 
-            if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration))
+            if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration) || m_shapeConfiguration.IsCylinderConfig())
             {
                 auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), *(shapeConfig.get()),
                     m_shapeConfiguration.m_subdivisionLevel, shapeConfig->m_scale);
@@ -972,7 +957,7 @@ namespace PhysX
         const AZ::u32 shapeIndex = 0;
         m_colliderDebugDraw.DrawMesh(
             debugDisplay,
-            m_configuration,
+            GetColliderConfigurationNoOffset(),
             m_shapeConfiguration.m_cylinder.m_configuration,
             m_shapeConfiguration.m_cylinder.m_configuration.m_scale,
             shapeIndex);
@@ -1115,7 +1100,7 @@ namespace PhysX
         return m_shapeConfiguration.IsAssetConfig();
     }
 
-    AZ::Vector3 EditorColliderComponent::GetDimensions()
+    AZ::Vector3 EditorColliderComponent::GetDimensions() const
     {
         return m_shapeConfiguration.m_box.m_dimensions;
     }
@@ -1126,19 +1111,25 @@ namespace PhysX
         CreateStaticEditorCollider();
     }
 
-    AZ::Transform EditorColliderComponent::GetCurrentTransform()
+    AZ::Vector3 EditorColliderComponent::GetTranslationOffset() const
     {
-        return GetWorldTM();
+        return m_configuration.m_position;
     }
 
-    AZ::Transform EditorColliderComponent::GetCurrentLocalTransform()
+    void EditorColliderComponent::SetTranslationOffset(const AZ::Vector3& translationOffset)
+    {
+        m_configuration.m_position = translationOffset;
+        CreateStaticEditorCollider();
+    }
+
+    AZ::Transform EditorColliderComponent::GetCurrentLocalTransform() const
     {
         return GetColliderLocalTransform();
     }
 
-    AZ::Vector3 EditorColliderComponent::GetBoxScale()
+    AZ::Transform EditorColliderComponent::GetManipulatorSpace() const
     {
-        return AZ::Vector3::CreateOne();
+        return GetWorldTM();
     }
 
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
@@ -1567,6 +1558,17 @@ namespace PhysX
         }
 
         Utils::Geometry::PointList samplePoints = Utils::CreatePointsAtFrustumExtents(height, radius, radius, subdivisionCount).value();
+
+        const AZ::Transform colliderLocalTransform = GetColliderLocalTransform();
+
+        AZStd::transform(
+            samplePoints.begin(),
+            samplePoints.end(),
+            samplePoints.begin(),
+            [&colliderLocalTransform](const AZ::Vector3& point)
+            {
+                return colliderLocalTransform.TransformPoint(point);
+            });
 
         const AZ::Vector3 scale = m_shapeConfiguration.m_cylinder.m_configuration.m_scale;
         m_shapeConfiguration.m_cylinder.m_configuration = Utils::CreatePxCookedMeshConfiguration(samplePoints, scale).value();

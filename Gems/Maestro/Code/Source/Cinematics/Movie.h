@@ -17,11 +17,9 @@
 #include <AzCore/Time/ITime.h>
 
 #include <CryCommon/TimeValue.h>
-#include <CryCommon/StaticInstance.h>
 #include <CryCommon/StlUtils.h>
 
 #include "IMovieSystem.h"
-#include "IShader.h"
 
 struct PlayingSequence
 {
@@ -37,35 +35,6 @@ struct PlayingSequence
     //! Sequence from other sequence's sequence track
     bool trackedSequence;
     bool bSingleFrame;
-};
-
-class CLightAnimWrapper
-    : public ILightAnimWrapper
-{
-public:
-    // ILightAnimWrapper interface
-    bool Resolve() override;
-
-public:
-    static CLightAnimWrapper* Create(const char* name);
-    static void ReconstructCache();
-    static IAnimSequence* GetLightAnimSet();
-    static void SetLightAnimSet(IAnimSequence* pLightAnimSet);
-    static void InvalidateAllNodes();
-
-private:
-    typedef std::map<AZStd::string, CLightAnimWrapper*> LightAnimWrapperCache;
-    static StaticInstance<LightAnimWrapperCache> ms_lightAnimWrapperCache;
-    static AZStd::intrusive_ptr<IAnimSequence> ms_pLightAnimSet;
-
-private:
-    static CLightAnimWrapper* FindLightAnim(const char* name);
-    static void CacheLightAnim(const char* name, CLightAnimWrapper* p);
-    static void RemoveCachedLightAnim(const char* name);
-
-private:
-    CLightAnimWrapper(const char* name);
-    virtual ~CLightAnimWrapper();
 };
 
 struct IConsoleCmdArgs;

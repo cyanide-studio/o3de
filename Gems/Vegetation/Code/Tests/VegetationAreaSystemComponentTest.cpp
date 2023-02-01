@@ -58,9 +58,6 @@ namespace UnitTest
         void Init() override {}
         void Activate() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             // Initialize the job manager with 1 thread for the AssetManager to use.
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -80,9 +77,6 @@ namespace UnitTest
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_jobContext;
             delete m_jobManager;
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         AZ::JobManager* m_jobManager{ nullptr };
@@ -114,7 +108,7 @@ namespace UnitTest
 
     // Test harness for the vegetation system that starts up / shuts down all the vegetation system components.
     class VegetationTestApp
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         VegetationTestApp()
@@ -128,7 +122,6 @@ namespace UnitTest
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_memoryBlocksByteSize = 50 * 1024 * 1024;
             appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-            appDesc.m_stackRecordLevels = 20;
 
             AZ::ComponentApplication::StartupParameters appStartup;
             appStartup.m_createStaticModulesCallback =

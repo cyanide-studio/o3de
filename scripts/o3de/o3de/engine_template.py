@@ -1454,7 +1454,8 @@ def create_project(project_path: pathlib.Path,
                    system_component_class_id: str = None,
                    editor_system_component_class_id: str = None,
                    module_id: str = None,
-                   project_id: str = None) -> int:
+                   project_id: str = None,
+                   version:str = None) -> int:
     """
     Template instantiation specialization that makes all default assumptions for a Project template instantiation,
      reducing the effort needed in instancing a project
@@ -1484,6 +1485,7 @@ def create_project(project_path: pathlib.Path,
      random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
     :param project_id: optionally specify a str for the project id, default is random uuid
+    :param version: optionally specify a str for the project version, default is 1.0.0
     :return: 0 for success or non 0 failure code
     """
     if template_name and template_path:
@@ -1696,6 +1698,7 @@ def create_project(project_path: pathlib.Path,
     replacements.append(("${NameUpper}", project_name.upper()))
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    replacements.append(("${Version}", version if version else "1.0.0"))
 
     # was a project id specified
     if project_id:
@@ -1843,7 +1846,8 @@ def create_gem(gem_path: pathlib.Path,
                no_register: bool = False,
                system_component_class_id: str = None,
                editor_system_component_class_id: str = None,
-               module_id: str = None) -> int:
+               module_id: str = None,
+               version: str = None) -> int:
     """
     Template instantiation specialization that makes all default assumptions for a Gem template instantiation,
      reducing the effort needed in instancing a gem
@@ -1886,6 +1890,7 @@ def create_gem(gem_path: pathlib.Path,
     :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is
      random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
+    :param version: optionally specify a version, default is 1.0.0
     :return: 0 for success or non 0 failure code
     """
     if template_name and template_path:
@@ -2102,22 +2107,15 @@ def create_gem(gem_path: pathlib.Path,
     replacements.append(("${SanitizedNameLower}", sanitized_lowercase_name))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
-    if display_name:
-        replacements.append(("${DisplayName}", display_name))
-    else:
-        replacements.append(("${DisplayName}", gem_name))
-
-    if summary:
-        replacements.append(("${Summary}", summary))
-    if license:
-        replacements.append(("${License}", license))
-    if license_url:
-        replacements.append(("${LicenseURL}", license_url))
-    if origin:
-        replacements.append(("${Origin}", origin))
-    if origin_url:
-        replacements.append(("${OriginURL}", origin_url))
+    replacements.append(("${DisplayName}", display_name if display_name else gem_name))
+    replacements.append(("${Summary}", summary if summary else ""))
+    replacements.append(("${License}", license if license else ""))
+    replacements.append(("${LicenseURL}", license_url if license_url else ""))
+    replacements.append(("${Origin}", origin if origin else ""))
+    replacements.append(("${OriginURL}", origin_url if origin_url else ""))
+    replacements.append(("${Version}", version if version else "1.0.0"))
     
+
     tags = [gem_name]
     if user_tags:
         # Allow commas or spaces as tag separators
@@ -2136,14 +2134,10 @@ def create_gem(gem_path: pathlib.Path,
     #remove the first and last quote because those already exist in gem.json
     replacements.append(("${Platforms}", platforms_quoted[1:-1]))
 
-    if icon_path:
-        replacements.append(("${IconPath}", pathlib.PurePath(icon_path).as_posix()))
-    if requirements:
-        replacements.append(("${Requirements}", requirements))
-    if documentation_url:
-        replacements.append(("${DocumentationURL}", documentation_url))
-    if repo_uri:
-        replacements.append(("${RepoURI}", repo_uri))
+    replacements.append(("${IconPath}", pathlib.PurePath(icon_path).as_posix() if icon_path else ""))
+    replacements.append(("${Requirements}", requirements if requirements else ""))
+    replacements.append(("${DocumentationURL}", documentation_url if documentation_url else ""))
+    replacements.append(("${RepoURI}", repo_uri if repo_uri else ""))
 
     # module id is a uuid with { and -
     if module_id:
@@ -2316,7 +2310,8 @@ def _run_create_project(args: argparse) -> int:
                           args.system_component_class_id,
                           args.editor_system_component_class_id,
                           args.module_id,
-                          args.project_id)
+                          args.project_id,
+                          args.version)
 
 
 def _run_create_gem(args: argparse) -> int:
@@ -2349,7 +2344,8 @@ def _run_create_gem(args: argparse) -> int:
                       args.no_register,
                       args.system_component_class_id,
                       args.editor_system_component_class_id,
-                      args.module_id)
+                      args.module_id,
+                      args.version)
 
 
 def add_args(subparsers) -> None:
@@ -2637,6 +2633,8 @@ def add_args(subparsers) -> None:
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,
                                           help='If the project template is instantiated successfully, it will not register the'
                                                ' project with the global or engine manifest file.')
+    create_project_subparser.add_argument('--version', type=str, required=False,
+                                          help='An optional version. Defaults to 1.0.0')
     create_project_subparser.set_defaults(func=_run_create_project)
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
@@ -2768,6 +2766,8 @@ def add_args(subparsers) -> None:
                        help='Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/...')
     create_gem_subparser.add_argument('-ru', '--repo-uri', type=str, required=False,
                        help='An optional URI for the gem repository where your Gem can be downloaded')
+    create_gem_subparser.add_argument('--version', type=str, required=False,
+                       help='An optional version. Defaults to 1.0.0')
     create_gem_subparser.set_defaults(func=_run_create_gem)
 
 

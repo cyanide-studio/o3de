@@ -399,7 +399,18 @@ namespace O3DE::ProjectManager
             auto engineData = m_manifest.attr("get_engine_json_data")(pybind11::none(), enginePath);
             if (pybind11::isinstance<pybind11::dict>(engineData))
             {
-                engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0.0");
+                if (engineData.contains("version"))
+                {
+                    engineInfo.m_version = Py_To_String_Optional(engineData, "version", "0.0.0");
+                    engineInfo.m_displayVersion = Py_To_String_Optional(engineData, "display_version", "0.0.0");
+                }
+                else
+                {
+                    // maintain for backwards compatibility with older file formats
+                    engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0");
+                    engineInfo.m_displayVersion = engineInfo.m_version;
+                }
+
                 engineInfo.m_name = Py_To_String_Optional(engineData, "engine_name", "O3DE");
                 engineInfo.m_path = Py_To_String(enginePath);
 
@@ -871,6 +882,7 @@ namespace O3DE::ProjectManager
                     "origin"_a = QString_To_Py_String(gemInfo.m_origin),
                     "origin_url"_a = QString_To_Py_String(gemInfo.m_originURL),
                     "user_tags"_a = QString_To_Py_String(gemInfo.m_features.join(",")),
+                    "platforms"_a = QStringList_To_Py_List(gemInfo.GetPlatformsAsStringList()),
                     "icon_path"_a = QString_To_Py_Path(gemInfo.m_iconPath),
                     "documentation_url"_a = QString_To_Py_String(gemInfo.m_documentationLink),
                     "repo_uri"_a = QString_To_Py_String(gemInfo.m_repoUri),
@@ -916,8 +928,10 @@ namespace O3DE::ProjectManager
                     "new_requirements"_a = QString_To_Py_String(newGemInfo.m_requirement),
                     "new_documentation_url"_a = QString_To_Py_String(newGemInfo.m_documentationLink),
                     "new_license"_a = QString_To_Py_String(newGemInfo.m_licenseText),
-                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),   
-                    "replace_tags"_a = QStringList_To_Py_List(newGemInfo.m_features)) //the python code seems to interpret these lists as space separated
+                    "new_license_url"_a = QString_To_Py_String(newGemInfo.m_licenseLink),
+                    "new_repo_uri"_a = QString_To_Py_String(newGemInfo.m_repoUri),
+                    "replace_tags"_a = QStringList_To_Py_List(newGemInfo.m_features), //the python code seems to interpret these lists as space separated
+                    "replace_platforms"_a = QStringList_To_Py_List(newGemInfo.GetPlatformsAsStringList()))
                     ;
                 
                 if (editGemResult.cast<int>() == 0)
@@ -1005,6 +1019,14 @@ namespace O3DE::ProjectManager
                     for (auto tag : data["user_tags"])
                     {
                         gemInfo.m_features.push_back(Py_To_String(tag));
+                    }
+                }
+
+                if (data.contains("platforms"))
+                {
+                    for (auto platform : data["platforms"])
+                    {
+                        gemInfo.m_platforms |= GemInfo::GetPlatformFromString(Py_To_String(platform));
                     }
                 }
 

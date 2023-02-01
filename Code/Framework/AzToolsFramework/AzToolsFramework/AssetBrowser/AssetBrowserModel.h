@@ -67,8 +67,11 @@ namespace AzToolsFramework
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
             int columnCount(const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+            Qt::DropActions supportedDropActions() const override;
             Qt::ItemFlags flags(const QModelIndex& index) const override;
+            bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
             QMimeData* mimeData(const QModelIndexList& indexes) const override;
+            QStringList mimeTypes() const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
             QModelIndex parent(const QModelIndex& child) const override;
 
@@ -98,6 +101,8 @@ namespace AzToolsFramework
 
             void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32());
 
+            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
+
         Q_SIGNALS:
             void RequestOpenItemForEditing(const QModelIndex& index);
 
@@ -112,7 +117,6 @@ namespace AzToolsFramework
             AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 
-            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
         };
     } // namespace AssetBrowser

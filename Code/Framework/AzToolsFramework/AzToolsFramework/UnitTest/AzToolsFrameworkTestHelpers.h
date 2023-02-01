@@ -17,6 +17,7 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzTest/AzTest.h>
@@ -39,7 +40,9 @@
 
 #include <ostream>
 
-AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // warning suppressed: constant used in conditional expression
+// MSVC: warning suppressed: constant used in conditional expression
+// CLANG: warning suppressed: implicit conversion loses integer precision
+AZ_PUSH_DISABLE_WARNING(4127, "-Wshorten-64-to-32")
 #include <QtTest/QtTest>
 AZ_POP_DISABLE_WARNING
 
@@ -217,16 +220,18 @@ namespace UnitTest
     };
 
     /// Base fixture for ToolsApplication editor tests.
+    template<bool CheckForLeaksOnDestruction = true>
     class ToolsApplicationFixture
-        : public AllocatorsTestFixture
+        : public AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>
     {
+        using Base = AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>;
     public:
         void SetUp() override final
         {
             using AzToolsFramework::GetEntityContextId;
             using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
 
-            AllocatorsTestFixture::SetUp();
+            Base::SetUp();
 
             if (!GetApplication())
             {
@@ -286,7 +291,7 @@ namespace UnitTest
                 m_app.reset();
             }
 
-            AllocatorsTestFixture::TearDown();
+            Base::TearDown();
         }
 
         virtual void SetUpEditorFixtureImpl() {}
@@ -418,6 +423,18 @@ namespace UnitTest
     /// Optional second parameter of Entity pointer if required.
     AZ::EntityId CreateEditorLayerEntity(const char* name, AZ::Entity** outEntity = nullptr);
 
+    /// Create a component for a given entity if the component is missing.
+    template<class ComponentType>
+    void CreateComponentIfMissing(AZ::Entity* entity)
+    {
+        ASSERT_TRUE(entity != nullptr) << "Cannot create a component for a null entity.";
+
+        if (!(entity->FindComponent<ComponentType>()))
+        {
+            entity->CreateComponent<ComponentType>();
+        }
+    }
+    
     using SliceAssets = AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::SliceAsset>>;
 
     /// This function transfers the ownership of all the entity pointers - do not delete or use them afterwards.

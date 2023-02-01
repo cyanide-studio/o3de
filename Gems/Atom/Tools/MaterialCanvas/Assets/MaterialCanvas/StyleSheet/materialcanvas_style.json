@@ -2181,7 +2181,7 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "ObjectNodeTitlePalette" ],
+    "selectors": [ "VertexNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#0055FF",
     "background-color": "#0055FF",
@@ -2223,7 +2223,7 @@
     "color": "#ffffff"
   },
   {
-    "selectors": [ "MaterialTemplateNodeTitlePalette" ],
+    "selectors": [ "MaterialOutputNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#FF0000",
     "background-color": "#FF0000",

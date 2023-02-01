@@ -11,7 +11,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/containers/list.h>
-#include <AzCore/Memory/AllocatorScope.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
@@ -58,8 +57,7 @@
 
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 // Scriptable Ebus Registration
 #include "Events/ReflectScriptableEvents.h"
@@ -80,12 +78,9 @@
 
 namespace LmbrCentral
 {
-    using LmbrCentralAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
-
     // This component boots the required allocators for LmbrCentral everywhere but AssetBuilders
     class LmbrCentralAllocatorComponent
         : public AZ::Component
-        , protected LmbrCentralAllocatorScope
     {
     public:
         AZ_COMPONENT(LmbrCentralAllocatorComponent, "{B0512A75-AC4A-423A-BB55-C3355C0B186A}", AZ::Component);
@@ -95,12 +90,10 @@ namespace LmbrCentral
 
         void Activate() override
         {
-            LmbrCentralAllocatorScope::ActivateAllocators();
         }
 
         void Deactivate() override
         {
-            LmbrCentralAllocatorScope::DeactivateAllocators();
         }
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -255,25 +248,9 @@ namespace LmbrCentral
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // Allow loading of Material and Texture Assets which explicitly specialized AzTypeInfo instead of using
-            // the AZ_RTTI Uuid from SimpleAssetReference<T>
-            serializeContext->ClassDeprecate("SimpleAssetReference_MaterialAsset", AZ::Uuid("{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}"),
-                [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-                {
-                    AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-                    for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-                    {
-                        childNodeElements.push_back(rootElement.GetSubElement(index));
-                    }
-                    // Convert the rootElement now, the existing child DataElmentNodes are now removed
-                    rootElement.Convert<AzFramework::SimpleAssetReference<MaterialAsset>>(context);
-                    for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-                    {
-                        rootElement.AddElement(AZStd::move(childNodeElement));
-                    }
-                    return true;
-                });
-            serializeContext->ClassDeprecate("SimpleAssetReference_TextureAsset", AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
+            serializeContext->ClassDeprecate(
+                "SimpleAssetReference_TextureAsset",
+                AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
                 {
                     AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -289,7 +266,6 @@ namespace LmbrCentral
                     }
                     return true;
                 });
-            AzFramework::SimpleAssetReference<MaterialAsset>::Register(*serializeContext);
             AzFramework::SimpleAssetReference<TextureAsset>::Register(*serializeContext);
 
             serializeContext->Class<LmbrCentralSystemComponent, AZ::Component>()
@@ -333,29 +309,14 @@ namespace LmbrCentral
 
     void LmbrCentralSystemComponent::Activate()
     {
-        if (!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-            m_allocatorShutdowns.push_back([]() { AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy(); });
-        }
-
         // Register asset handlers. Requires "AssetDatabaseService"
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
         if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
         {
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<CharacterDefinitionAsset>::Uuid());
-
-            assetCatalog->AddExtension("cgf");
-            assetCatalog->AddExtension("chr");
-            assetCatalog->AddExtension("cdf");
-            assetCatalog->AddExtension("dds");
-            assetCatalog->AddExtension("caf");
-            assetCatalog->AddExtension("xml");
+            // Sprite files are only used by LyShine and should be moved there at some point
             assetCatalog->AddExtension("sprite");
-            assetCatalog->AddExtension("cax");
         }
 
         AZ::Data::AssetManagerNotificationBus::Handler::BusConnect();

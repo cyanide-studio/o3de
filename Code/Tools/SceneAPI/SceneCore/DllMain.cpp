@@ -41,6 +41,7 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkeletonProxyRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IUnmodifiableRule.h>
 
 // @CYA EDIT: Add tags
 #include <SceneAPI/SceneCore/DataTypes/Rules/ITagRule.h>
@@ -171,6 +172,7 @@ namespace AZ
                     context->Class<AZ::SceneAPI::DataTypes::ILodRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::ISkeletonProxyRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IScriptProcessorRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
+                    context->Class<AZ::SceneAPI::DataTypes::IUnmodifiableRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     // @CYA EDIT: Add tags
                     context->Class<AZ::SceneAPI::DataTypes::ITagRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     // @CYA END
@@ -317,6 +319,11 @@ extern "C" AZ_DLL_EXPORT void ReflectTypes(AZ::SerializeContext * context)
     AZ::SceneAPI::SceneCore::ReflectTypes(context);
 }
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo()
+{
+    AZ::GetCurrentSerializeContextModule().Cleanup();
+}
+
 extern "C" AZ_DLL_EXPORT void Activate()
 {
     AZ::SceneAPI::SceneCore::Activate();
@@ -336,17 +343,6 @@ extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
     g_sceneCoreInitialized = false;
 
     AZ::SceneAPI::SceneCore::Uninitialize();
-
-    // This module does not own these allocators, but must clear its cached EnvironmentVariables
-    // because it is linked into other modules, and thus does not get unloaded from memory always
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)
