@@ -3362,27 +3362,6 @@ namespace AssetProcessor
         WarmUpFileCache(filePaths);
         AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
 
-// @CYA EDIT: Add setting to disable startup scan
-        if (m_initialScanSkippingFeature)
-        {
-            for (const AssetFileInfo& fileInfo : filePaths)
-                AddKnownFoldersRecursivelyForFile(fileInfo.m_filePath, fileInfo.m_scanFolder->ScanPath());
-
-            m_sourceFilesInDatabase.clear();
-            m_fileModTimes.clear();
-            m_fileHashes.clear();
-
-            m_initialScanSkippingFeature = false;
-
-            // There's a weird check preventing m_assetProcessorManagerIsReady to pass to true if number of job doesn't change at all, updating it to 1 before IdleCheck puts it to 0 to bypass
-            // plz send help
-            Q_EMIT NumRemainingJobsChanged(1);
-
-            QueueIdleCheck();
-            return;
-        }
-// @CYA END
-
         int processedFileCount = 0;
 
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");

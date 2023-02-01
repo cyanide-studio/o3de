@@ -125,7 +125,7 @@ public Q_SLOTS:
     void OnRescanButtonClicked();
     void HighlightAsset(QString assetPath);
 
-// @CYA EDIT: Add setting to disable startup scan
+// @CYA EDIT: Add AP button to trigger fast scan
     void OnFastScanButtonClicked();
 // @CYA END
 
