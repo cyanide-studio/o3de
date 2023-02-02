@@ -114,9 +114,8 @@ namespace AZ
                 (memoryProperties & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
 
             auto& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
-            memoryUsage.m_reservedInBytes += allocInfo.size;
-            memoryUsage.m_residentInBytes += allocInfo.size;
-
+            memoryUsage.m_totalResidentInBytes += allocInfo.size;
+            memoryUsage.Validate();
 #ifdef CYA_DEBUG_VMA_ALLOC
             m_allocations.emplace(bufferMemory.get(), allocInfo.size);
 #endif
@@ -159,8 +158,8 @@ namespace AZ
 #endif
 
                 auto& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
-                memoryUsage.m_reservedInBytes -= allocInfo.size;
-                memoryUsage.m_residentInBytes -= allocInfo.size;
+                memoryUsage.m_totalResidentInBytes -= allocInfo.size;
+                memoryUsage.Validate();
             }
 // @CYA END
 
