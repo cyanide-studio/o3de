@@ -80,6 +80,10 @@ namespace AZ
             //! materials, shaders, etc. are actively being used to render the model.
             virtual const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
 
+// @CYA EDIT: Expose init state to allow to know if we can use mesh ObjectSrg.
+            virtual bool IsInit(const MeshHandle& meshHandle) const = 0;
+// @CYA END
+
             //! Gets the ObjectSrgs for a meshHandle.
             //! Updating the ObjectSrgs should be followed by a call to QueueObjectSrgForCompile,
             //! instead of compiling the srgs directly. This way, if the srgs have already been queued for compile,

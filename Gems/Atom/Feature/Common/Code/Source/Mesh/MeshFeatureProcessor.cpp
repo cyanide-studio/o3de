@@ -396,6 +396,13 @@ namespace AZ
             return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
 
+// @CYA EDIT: Expose init state to allow to know if we can use mesh ObjectSrg.
+        bool MeshFeatureProcessor::IsInit(const MeshHandle& meshHandle) const
+        {
+            return meshHandle.IsValid() ? (meshHandle->m_needsInit == false) : false;
+        }
+// @CYA END
+
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
         {
             static AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> staticEmptyList;
