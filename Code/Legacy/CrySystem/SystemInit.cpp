@@ -1443,7 +1443,9 @@ void CSystem::CreateSystemVars()
     REGISTER_STRING_CB("g_language", "", VF_NULL, "Defines which language pak is loaded", CSystem::OnLanguageCVarChanged);
 
     // adding CVAR to toggle assert verbosity level
-    const int defaultAssertValue = 1;
+// @CYA EDIT: change default value for assert
+    const int defaultAssertValue = 2;
+// @CYA END
     REGISTER_CVAR2_CB(
         "sys_asserts",
         &g_cvars.sys_asserts,
