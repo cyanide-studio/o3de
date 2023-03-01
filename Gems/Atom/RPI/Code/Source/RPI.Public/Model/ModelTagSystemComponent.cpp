@@ -14,7 +14,7 @@
 // @CYA EDIT: Add model tags
 
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
-#include <AzCore/Asset/AssetManager.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -133,7 +133,7 @@ namespace AZ
             {
                 AZ::SystemTickBus::QueueFunction([assetId]
                 {
-                    AZ::Data::AssetManager::Instance().ReloadAsset(assetId, AZ::Data::AssetLoadBehavior::Default);
+                    AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, assetId);
                 });
             }
         }

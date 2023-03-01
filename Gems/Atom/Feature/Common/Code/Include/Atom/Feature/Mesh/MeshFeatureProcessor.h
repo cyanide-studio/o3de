@@ -119,6 +119,8 @@ namespace AZ
             MeshHandleDescriptor m_descriptor;
             Data::Instance<RPI::Model> m_model;
 
+            size_t m_lodBias = 0;
+
             //! A reference to the original model asset in case it got cloned before creating the model instance.
             Data::Asset<RPI::ModelAsset> m_originalModelAsset;
 
