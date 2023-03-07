@@ -13,7 +13,9 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
+// @CYA EDIT: Add model tags - PR 14129
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
+// @CYA END
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -569,7 +571,9 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
+// @CYA EDIT: Add model tags - PR 14129
                 return { RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
+// @CYA END
             }
         }
 
@@ -824,7 +828,7 @@ namespace AZ
         void ModelDataInstance::MeshLoader::OnAssetReady(Data::Asset<Data::AssetData> asset)
         {
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
-
+// @CYA EDIT: Add model tags - PR 14129
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
             m_parent->m_originalModelAsset = asset;
 
@@ -852,7 +856,10 @@ namespace AZ
                 }
             }
             else
+            {
                 m_parent->m_lodBias = 0;
+            }
+// @CYA END
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
@@ -1590,7 +1597,9 @@ namespace AZ
             const size_t modelLodCount = m_model->GetLodCount();
             const auto& lodAssets = m_model->GetModelAsset()->GetLodAssets();
             AZ_Assert(lodAssets.size() == modelLodCount, "Number of asset lods must match number of model lods");
+// @CYA EDIT: Add model tags - PR 14129
             AZ_Assert(m_lodBias <= modelLodCount - 1, "Incorrect lod bias");
+// @CYA END
 
             lodData.m_lods.resize(modelLodCount);
             cullData.m_drawListMask.reset();
@@ -1601,6 +1610,7 @@ namespace AZ
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
+// @CYA EDIT: Add model tags / add condition to lodBias - PR 14129
                 // non-used lod (except if forced)
                 if (lodIndex < m_lodBias)
                 {
@@ -1632,6 +1642,7 @@ namespace AZ
                         lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
                     }
                 }
+// @CYA END
 
                 lod.m_drawPackets.clear();
                 for (const RPI::MeshDrawPacket& meshDrawPacket : m_drawPacketListsByLod[lodIndex])
