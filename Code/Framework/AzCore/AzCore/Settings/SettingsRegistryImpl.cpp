@@ -1506,15 +1506,11 @@ namespace AZ
             pointer.Create(m_settings, m_settings.GetAllocator()).SetString(path, m_settings.GetAllocator());
         }
 
-        // @CYA EDIT: This will cause asset bundles manifest to load too early, breaking asset loading, see https://github.com/o3de/o3de/issues/13473
         // For each merged settings key, signal the notifier event
-        // 
-        // for (AZStd::string_view mergedSettingsKey : mergedSettingsKeys)
-        // {
-        //     SignalNotifier(mergedSettingsKey, GetType(mergedSettingsKey));
-        // }
-        // 
-        // @CYA END
+        for (AZStd::string_view mergedSettingsKey : mergedSettingsKeys)
+        {
+            SignalNotifier(mergedSettingsKey, GetType(mergedSettingsKey));
+        }
 
         SignalNotifier(rootKey, anchorType);
 
