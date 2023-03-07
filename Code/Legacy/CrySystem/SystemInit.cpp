@@ -1444,7 +1444,11 @@ void CSystem::CreateSystemVars()
 
     // adding CVAR to toggle assert verbosity level
 // @CYA EDIT: change default value for assert
+#if (defined(WIN32) || defined(WIN64)) && defined(_RELEASE)
+    const int defaultAssertValue = 1;
+#else
     const int defaultAssertValue = 2;
+#endif
 // @CYA END
     REGISTER_CVAR2_CB(
         "sys_asserts",
