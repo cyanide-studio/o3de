@@ -330,9 +330,11 @@ namespace AZ
         //! @param newTransform The transform of the new parent. 
         virtual void OnParentTransformWillChange(AZ::Transform oldTransform, AZ::Transform newTransform) { (void)oldTransform; (void)newTransform; }
 
-        //! Signals that a child was added to the entity.
-        //! @param child The entityId of the added child.
-        virtual void OnChildAdded(EntityId child) { (void)child; }
+// @CYA EDIT: Disable OnChildAdded notification as it has huge performance impact on level loading even if not implemented
+        ////! Signals that a child was added to the entity.
+        ////! @param child The entityId of the added child.
+        //virtual void OnChildAdded(EntityId child) { (void)child; }
+// @CYA END
 
         //! Signals that a child was removed from the entity.
         //! @param child The entityId of the removed child.

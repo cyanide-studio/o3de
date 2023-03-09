@@ -29,8 +29,10 @@ namespace AZ
             "{9CEF4DAB-F359-4A3E-9856-7780281E0DAA}",
             AZ::SystemAllocator, 
             OnTransformChanged, 
-            OnParentChanged, 
-            OnChildAdded, 
+            OnParentChanged,
+// @CYA EDIT: Disable OnChildAdded notification as it has huge performance impact on level loading even if not implemented
+            //OnChildAdded,
+// @CYA END
             OnChildRemoved
         );
 
@@ -44,10 +46,12 @@ namespace AZ
             Call(FN_OnParentChanged, oldParent, newParent);
         }
 
-        void OnChildAdded(EntityId child) override
-        {
-            Call(FN_OnChildAdded, child);
-        }
+// @CYA EDIT: Disable OnChildAdded notification as it has huge performance impact on level loading even if not implemented
+        //void OnChildAdded(EntityId child) override
+        //{
+        //    Call(FN_OnChildAdded, child);
+        //}
+// @CYA END
 
         void OnChildRemoved(EntityId child) override
         {
@@ -595,7 +599,9 @@ namespace AzFramework
             }
         }
 
-        EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
+// @CYA EDIT: Disable OnChildAdded notification as it has huge performance impact on level loading even if not implemented
+        //EBUS_EVENT_ID(parentId, AZ::TransformNotificationBus, OnChildAdded, GetEntityId());
+// @CYA END
         auto newParentTransform = AZ::TransformBus::FindFirstHandler(parentId);
         if (newParentTransform)
         {
