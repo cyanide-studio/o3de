@@ -399,13 +399,6 @@ namespace AZ
             return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
 
-// @CYA EDIT: Expose init state to allow to know if we can use mesh ObjectSrg.
-        bool MeshFeatureProcessor::IsInit(const MeshHandle& meshHandle) const
-        {
-            return meshHandle.IsValid() ? (meshHandle->m_needsInit == false) : false;
-        }
-// @CYA END
-
         const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
         {
             static AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> staticEmptyList;
@@ -463,6 +456,16 @@ namespace AZ
                 handler.Connect(meshHandle->m_meshLoader->GetModelChangedEvent());
             }
         }
+
+// @CYA EDIT: Add ObjectSrgCreated event
+        void MeshFeatureProcessor::ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler)
+        {
+            if (meshHandle.IsValid())
+            {
+                handler.Connect(meshHandle->GetObjectSrgCreatedEvent());
+            }
+        }
+// @CYA END
 
         void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
@@ -1076,6 +1079,9 @@ namespace AZ
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
                         continue;
                     }
+// @CYA EDIT: Add ObjectSrgCreated event
+                    m_objectSrgCreatedEvent.Signal(meshObjectSrg);
+// @CYA END
                     m_objectSrgList.push_back(meshObjectSrg);
                 }
 

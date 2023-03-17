@@ -45,8 +45,16 @@ namespace AZ
             friend class MeshLoader;
 
         public:
+// @CYA EDIT: Add ObjectSrgCreated event
+            using ObjectSrgCreatedEvent = MeshFeatureProcessorInterface::ObjectSrgCreatedEvent;
+// @CYA END
+
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
             const RPI::Cullable& GetCullable() { return m_cullable; }
+
+// @CYA EDIT: Add ObjectSrgCreated event
+            ObjectSrgCreatedEvent& GetObjectSrgCreatedEvent() { return m_objectSrgCreatedEvent; }
+// @CYA END
 
         private:
             class MeshLoader
@@ -126,6 +134,9 @@ namespace AZ
 
             //! List of object SRGs used by meshes in this model 
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
+// @CYA EDIT: Add ObjectSrgCreated event
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
+// @CYA END
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
             RHI::DrawItemSortKey m_sortKey;
@@ -190,15 +201,15 @@ namespace AZ
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
             const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
-// @CYA EDIT: Expose init state to allow to know if we can use mesh ObjectSrg.
-            bool IsInit(const MeshHandle& meshHandle) const override;
-// @CYA END
             const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const override;
             void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
+// @CYA EDIT: Add ObjectSrgCreated event
+            void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) override;
+// @CYA END
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;

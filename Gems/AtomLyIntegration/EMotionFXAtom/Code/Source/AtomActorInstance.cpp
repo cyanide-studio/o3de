@@ -672,6 +672,9 @@ namespace AZ::Render
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                 m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
+// @CYA EDIT: Add ObjectSrgCreated event
+            m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(*m_meshHandle, m_objectSrgCreatedHandler);
+// @CYA END
         }
 
         // If render proxies already exist, they will be auto-freed
@@ -799,6 +802,13 @@ namespace AZ::Render
             }
         }
     }
+
+// @CYA EDIT: Add ObjectSrgCreated event
+    void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
+    {
+        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+    }
+// @CYA END
 
     const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const
     {

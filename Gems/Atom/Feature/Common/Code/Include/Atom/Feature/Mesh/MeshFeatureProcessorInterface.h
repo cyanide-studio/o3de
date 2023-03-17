@@ -54,6 +54,9 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
+// @CYA EDIT: Add ObjectSrgCreated event
+            using ObjectSrgCreatedEvent = Event<const Data::Instance<RPI::ShaderResourceGroup>&>;
+// @CYA END
 
             //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
@@ -80,10 +83,6 @@ namespace AZ
             //! materials, shaders, etc. are actively being used to render the model.
             virtual const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
 
-// @CYA EDIT: Expose init state to allow to know if we can use mesh ObjectSrg.
-            virtual bool IsInit(const MeshHandle& meshHandle) const = 0;
-// @CYA END
-
             //! Gets the ObjectSrgs for a meshHandle.
             //! Updating the ObjectSrgs should be followed by a call to QueueObjectSrgForCompile,
             //! instead of compiling the srgs directly. This way, if the srgs have already been queued for compile,
@@ -103,6 +102,11 @@ namespace AZ
             virtual const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const = 0;
             //! Connects a handler to any changes to an RPI::Model. Changes include loading and reloading.
             virtual void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) = 0;
+
+// @CYA EDIT: Add ObjectSrgCreated event
+            //! Connects a handler to ObjectSrg creation
+            virtual void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) = 0;
+// @CYA END
 
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,

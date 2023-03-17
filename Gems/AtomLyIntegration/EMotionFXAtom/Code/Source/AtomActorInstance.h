@@ -201,6 +201,10 @@ namespace AZ
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
 
+// @CYA EDIT: Add ObjectSrgCreated event
+            void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
+// @CYA END
+
             // Debug geometry rendering
             AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
 
@@ -221,6 +225,13 @@ namespace AZ
 
             AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
             AZStd::vector<float> m_wrinkleMaskWeights;
+            
+// @CYA EDIT: Add ObjectSrgCreated event
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            {
+                [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
+            };
+// @CYA END
         };
 
     } // namespace Render

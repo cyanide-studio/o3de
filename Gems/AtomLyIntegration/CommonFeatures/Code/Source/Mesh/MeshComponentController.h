@@ -164,6 +164,9 @@ namespace AZ
             static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
             void HandleModelChange(Data::Instance<RPI::Model> model);
+// @CYA EDIT: Add ObjectSrgCreated event
+            void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
+// @CYA END
             void RegisterModel();
             void UnregisterModel();
             void RefreshModelRegistration();
@@ -186,6 +189,13 @@ namespace AZ
             {
                 [&](Data::Instance<RPI::Model> model) { HandleModelChange(model); }
             };
+            
+// @CYA EDIT: Add ObjectSrgCreated event
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            {
+                [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
+            };
+// @CYA END
 
             AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler
             {
