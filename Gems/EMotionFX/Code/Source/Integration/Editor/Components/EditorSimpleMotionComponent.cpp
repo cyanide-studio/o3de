@@ -168,7 +168,8 @@ namespace EMotionFX
 // @CYA EDIT: Add motion event handler functions to allow add event handler from outside the gem
                 for (auto* handler : m_eventHandlers)
                 {
-                    m_motionInstance->AddEventHandler(handler);
+                    if (m_motionInstance)
+                        m_motionInstance->AddEventHandler(handler);
                 }
 // @CYA END
             }
