@@ -632,9 +632,10 @@ namespace AZ::Render
         MeshHandleStateRequestBus::Handler::BusConnect(m_entityId);
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
-        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+// @CYA EDIT: When OnModelReady is called before OnMeshHandleSet, it can cause cached pointer to read corrupted but valid data.
         MeshHandleStateNotificationBus::Event(m_entityId, &MeshHandleStateNotificationBus::Events::OnMeshHandleSet, &(*m_meshHandle));
-
+        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+// @CYA END
         m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
 
