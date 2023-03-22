@@ -409,9 +409,10 @@ namespace EMotionFX
         {
             DestroyActor();
 
+// @CYA_EDIT: Removed log when asset is NULL since we have an use case for it.
             // Create actor instance.
             auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
-            AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
+// @CYA_END
             if (!actorAsset)
             {
                 return;
@@ -420,7 +421,9 @@ namespace EMotionFX
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
             if (!m_actorInstance)
             {
-                AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
+// @CYA_EDIT: Fixed wrong variable check.
+                AZ_Error("EMotionFX", m_actorInstance, "Failed to create actor instance.");
+// @CYA_END
                 return;
             }
 
