@@ -59,7 +59,6 @@ namespace AZ
                 RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
                 heapMemoryUsage.m_totalResidentInBytes += sizeAllocated;
                 heapMemoryUsage.m_usedResidentInBytes += sizeAllocated;
-                heapMemoryUsage.m_uniqueAllocationBytes += sizeAllocated;
             }
 
             return BufferMemoryView(AZStd::move(memoryView), BufferMemoryType::Unique);
@@ -77,7 +76,6 @@ namespace AZ
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
             heapMemoryUsage.m_totalResidentInBytes -= sizeInBytes;
             heapMemoryUsage.m_usedResidentInBytes -= sizeInBytes;
-            heapMemoryUsage.m_uniqueAllocationBytes -= sizeInBytes;
 
             m_descriptor.m_device->QueueForRelease(memoryView);
 #endif
