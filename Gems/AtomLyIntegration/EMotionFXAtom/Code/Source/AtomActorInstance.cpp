@@ -807,7 +807,7 @@ namespace AZ::Render
 // @CYA EDIT: Add ObjectSrgCreated event
     void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
     {
-        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+        MeshSrgNotificationBus::Event(m_entityId, &MeshSrgNotificationBus::Events::OnObjectSrgCreated, objectSrg);
     }
 // @CYA END
 

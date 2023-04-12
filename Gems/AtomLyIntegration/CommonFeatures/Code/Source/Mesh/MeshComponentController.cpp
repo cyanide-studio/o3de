@@ -408,7 +408,7 @@ namespace AZ
 // @CYA EDIT: Add ObjectSrgCreated event
         void MeshComponentController::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
         {
-            MeshComponentNotificationBus::Event(m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+            MeshSrgNotificationBus::Event(m_entityComponentIdPair.GetEntityId(), &MeshSrgNotificationBus::Events::OnObjectSrgCreated, objectSrg);
         }
 // @CYA END
 
