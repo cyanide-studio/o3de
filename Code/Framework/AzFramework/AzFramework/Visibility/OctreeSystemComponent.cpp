@@ -349,6 +349,15 @@ namespace AzFramework
         AZ_Assert(!sceneName.IsEmpty(), "sceneName must be a valid string");
     }
 
+// @CYA_EDIT: Added new constructor with custom bounds.
+    OctreeScene::OctreeScene(const AZ::Name& sceneName, const AZ::Aabb& bounds)
+        : m_sceneName(sceneName)
+        , m_root(bounds)
+    {
+        AZ_Assert(!sceneName.IsEmpty(), "sceneName must be a valid string");
+    }
+// @CYA_END
+
     OctreeScene::~OctreeScene()
     {
         for (auto page : m_nodeCache)

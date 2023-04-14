@@ -99,6 +99,9 @@ namespace AzFramework
         AZ_DISABLE_COPY_MOVE(OctreeScene);
 
         explicit OctreeScene(const AZ::Name& sceneName);
+// @CYA_EDIT: Added the possibility to create an OctreeScene with custom bounds
+        explicit OctreeScene(const AZ::Name& sceneName, const AZ::Aabb& bounds);
+// @CYA_END
         virtual ~OctreeScene();
 
         //! IVisibilityScene overrides.
